@@ -15,7 +15,7 @@ $ catkin_make
 
 Add this to your .bashrc,
 
-source ~/IN2222_TU_CR/cogsys_panda/devel/setup.zsh
+source ~/IN2222_TU_CR/cogsys_panda/devel/setup.bash
 
 
 cogsys_robotino???
