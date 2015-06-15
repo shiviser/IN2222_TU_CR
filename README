@@ -1,0 +1,7 @@
+Getting Started
+===============
+After you clone/pull the repository for the first time,
+
+$ cd cogsys_panda/
+$ catkin_make
+
