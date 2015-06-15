@@ -1,0 +1,14 @@
+#JSGF V1.0;
+
+/**
+ * JSGF Grammar
+ */
+
+grammar smerobotics;
+
+public <sentence> = <command>;
+/*<response> = yes | no | maybe;*/
+<command> = <start> <action>;
+<start> = ok robot;
+<action> = put back <color>  ball;
+<color> = green | pink;

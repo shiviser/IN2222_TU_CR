@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+   Copyright 2014 fortiss gmbh
+   All rights reserved.
+
+   Any use, distribution or replication without a written permission
+   is prohibited.
+
+   The name "fortiss gmbh" must not be used to endorse or promote
+   products derived from the source code without prior written permission.
+
+   You agree to indemnify, hold harmless and defend fortiss gmbh from
+   and against any loss, damage, claims or lawsuits, including attorney's
+   fees that arise or result from your use the software.
+
+   THIS SOFTWARE IS PROVIDED "AS IS" AND "WITH ALL FAULTS", WITHOUT ANY
+   TECHNICAL SUPPORT OR ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING,
+   BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+   FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. ALSO, THERE IS NO
+   WARRANTY OF NON-INFRINGEMENT, TITLE OR QUIET ENJOYMENT. IN NO EVENT
+   SHALL COGNITION FACTORY OR ITS SUPPLIERS BE LIABLE FOR ANY DIRECT,
+   INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+   SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+   IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
+   -->
+<opencv_storage>
+<intrinsics type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+	529.92888 0 324.14660
+	0 528.41559 234.06582
+	0 0 1
+  </data>
+</intrinsics>
+<extrinsics type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>4</cols>
+  <dt>d</dt>
+  <data>
+  -0.050538 -0.998722 0.000341 -27
+  -0.993366 0.050302 -0.103410 55
+  -0.103295 -0.004887 -0.994639 235
+	0 0 0 1
+  </data>
+</extrinsics>
+</opencv_storage>
+
+
