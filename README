@@ -1,7 +1,11 @@
 Getting Started
 ===============
-After you clone/pull the repository for the first time,
+After you clone/pull the repository (preferably, in a folder named IN2222) for the first time,
 
 $ cd cogsys_panda/
 $ catkin_make
 
+
+Add this to your .bashrc, (supposing that you pulled inside a folder called IN2222)
+
+source ~/IN2222/cogsys_panda/devel/setup.zsh
