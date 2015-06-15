@@ -1,6 +1,13 @@
+Robotino team: Please put your workspace in this level along with cogsys_panda.
+
 Getting Started
 ===============
-After you clone/pull the repository for the first time,
+
+cogsys_panda
+------------
+This is the Indigo workspace. Will be used by production belt team and station team.
+
+After you have cloned/pulled the repository for the first time,
 
 $ cd cogsys_panda/
 $ catkin_make
@@ -9,3 +16,8 @@ $ catkin_make
 Add this to your .bashrc,
 
 source ~/IN2222_TU_CR/cogsys_panda/devel/setup.zsh
+
+
+cogsys_robotino???
+------------------
+To be used by the Robotino team.
