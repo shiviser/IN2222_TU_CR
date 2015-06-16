@@ -53,8 +53,10 @@ private:
     std::vector<Component> blueprint;
 
     std::vector<Slot> workbench_slots;
+    Slot collector_slot;
 
-    // TODO: parsed variables / UI variables
+    cv::Point3f cambot_wait_pos;
+    cv::Point3f gripperbot_wait_pos;
 
 protected:
     //
@@ -71,6 +73,9 @@ protected:
 
     //
     void broadcast_loc(const cv::Point3d position3D, std::string ref, std::string target_name);
+
+    //
+    void parse_config_file(std::string filepath);
 
 
 public:
