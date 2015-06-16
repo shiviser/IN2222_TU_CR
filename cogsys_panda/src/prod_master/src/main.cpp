@@ -113,6 +113,7 @@ int main(int argc, char **argv) {
         opengripper_client = n.serviceClient<gripper_control_srvs::OpenGripper>("/gripper_control/open_gripper");
         closegripper_client = n.serviceClient<gripper_control_srvs::CloseGripper>("/gripper_control/close_gripper"); */
 
+        ProdMaster prod_master(&n);
         BotController bot(&n);
         ShapesDetector shapes_detector(&n);
 
