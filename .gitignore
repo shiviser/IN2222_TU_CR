@@ -102,7 +102,6 @@ qtcreator-*
 .#*
 
 # Catkin custom files
-cogsys_panda/src/rosjava_msgs_srvs/.gradle/1.11/taskArtifacts
 
 # JetBrains IDE
 .idea
