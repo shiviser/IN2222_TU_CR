@@ -9,6 +9,7 @@
 // third parties
 #include <ros/ros.h>
 #include <opencv2/opencv.hpp>
+#include <QSettings>
 
 // custom includes
 #include "shapes_detector.h"
@@ -52,11 +53,18 @@ private:
 
     std::vector<Component> blueprint;
 
-    std::vector<Slot> workbench_slots;
+    std::vector<Slot> workbench_slots_cambot;
+    std::vector<Slot> workbench_slots_gripperbot;
     Slot collector_slot;
 
     cv::Point3f cambot_wait_pos;
     cv::Point3f gripperbot_wait_pos;
+
+    // parse_config_file helper
+    void _parse_config_slots(QSettings &ini_file, std::string bot_name, std::vector<Slot>& slots_collection);
+
+    // parse_config_file helper
+    void _parse_config_robots_pos(QSettings &ini_file, std::string bot_name, cv::Point3f& bot_wait_pos);
 
 protected:
     //
