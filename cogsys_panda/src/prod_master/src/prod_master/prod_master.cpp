@@ -3,14 +3,14 @@
 
 
 ProdMaster::ProdMaster(ros::NodeHandle *n) {
-    bot = new BotController(n);
-    shapes_detector = new ShapesDetector(n);
-
     // config file for positions etc.
     parse_config_file("/config_data/config.ini");
 
     // TODO: parse file for production
     // load_production("/config_data/production.ini");
+
+    bot = new BotController(n);
+    shapes_detector = new ShapesDetector(n);
 };
 
 
