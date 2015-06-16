@@ -6,7 +6,107 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
     bot = new BotController(n);
     shapes_detector = new ShapesDetector(n);
 
-    // TODO: parse a config file or from a UI
+    // config file for positions etc.
+    parse_config_file("/config_data/config.ini");
+
+    // TODO: config file for production
+    // parse_config_file("/config_data/production.ini");
+};
+
+
+void ProdMaster::parse_config_file(std::string filepath) {
+    std::string path = ros::package::getPath("prod_master");
+    std::stringstream ss_path;
+    ss_path << path << filepath;
+    QString filename(ss_path.str().c_str());
+    QFileInfo config(filename);
+
+    if(!config.exists()) {
+        std::cout <<"Error reading " << filepath << " file!" <<std::endl;
+        throw;
+    }
+
+    QSettings iniFile(filename, QSettings::IniFormat);
+
+    /*********************** START: SLOTS **************************/
+    iniFile.beginGroup("SLOTS");
+
+    int N_SLOTS = iniFile.value("N_SLOTS", 0).toInt();
+    std::cout << "N_SLOTS: " << N_SLOTS << std::endl;
+
+    std::stringstream target_name;
+    target_name.clear();
+    target_name << "SLOTS_" << "Z";
+    float slots_height = iniFile.value(target_name.str().c_str(), 0.0f).toString().toFloat();
+    std::cout << target_name.str().c_str() << ": " << slots_height << std::endl;
+
+    for(unsigned int n = 0; n < N_SLOTS; ++n) {
+        Slot cur_slot;
+        cur_slot.slot = n;
+
+        cv::Vec3f cur_slot__coord;
+        // Z is same for all slots
+        cur_slot__coord[2] = slots_height;
+
+        // using ASCII value of X and Y
+        for (char axis = 88; axis <= 89; ++axis) {
+            target_name.clear();
+            target_name << "SLOT_" << n << "_" << axis;
+
+            cur_slot__coord[axis - 88] = iniFile.value(target_name.str().c_str(), 0.0f).toString().toFloat();
+        }
+
+        cur_slot.coord = cur_slot__coord;
+        workbench_slots.push_back(cur_slot);
+
+        std::cout << "SLOT_" << n << ": slot = " << cur_slot.slot << ", coord = " << cur_slot.coord << std::endl;
+    }
+
+    // using ASCII value of X, Y and Z get the collector slot
+    cv::Vec3f collector_slot__coord;
+    for (char axis = 88; axis <= 90; ++axis) {
+        target_name.clear();
+        target_name << "SLOT_COLLECTOR_" << axis;
+
+        collector_slot__coord[axis - 88] = iniFile.value(target_name.str().c_str(), 0.0f).toString().toFloat();
+    }
+
+    // saving to class variable
+    collector_slot.slot = -1;
+    collector_slot.coord = collector_slot__coord;
+    std::cout << "SLOT_COLLECTOR: slot = " << collector_slot.slot << ", coord = " << collector_slot.coord << std::endl;
+
+    iniFile.endGroup();
+    /*********************** END: SLOTS **************************/
+
+
+    /*********************** START: DIFFERENT ROBOTS POSITIONS **************************/
+    iniFile.beginGroup("ROBOTS_POS");
+
+    cv::Vec3f wait_pos;
+
+    // using ASCII value of X, Y and Z get the cambot pos
+    for (char axis = 88; axis <= 90; ++axis) {
+        target_name.clear();
+        target_name << "CAMBOT_WAITS_ROBOTINO_" << axis;
+
+        wait_pos[axis - 88] = iniFile.value(target_name.str().c_str(), 0.0f).toString().toFloat();
+    }
+    cambot_wait_pos = wait_pos;
+    std::cout << "CAMBOT_WAITS_ROBOTINO: " << cambot_wait_pos << std::endl;
+
+    // using ASCII value of X, Y and Z get the cambot pos
+    for (char axis = 88; axis <= 90; ++axis) {
+        target_name.clear();
+        target_name << "GRIPPERBOT_WAITS_ROBOTINO_" << axis;
+
+        wait_pos[axis - 88] = iniFile.value(target_name.str().c_str(), 0.0f).toString().toFloat();
+    }
+    gripperbot_wait_pos = wait_pos;
+    std::cout << "GRIPPERBOT_WAITS_ROBOTINO: " << gripperbot_wait_pos << std::endl;
+
+    iniFile.endGroup();
+    /*********************** END: DIFFERENT ROBOTS POSITIONS **************************/
 };
 
 
