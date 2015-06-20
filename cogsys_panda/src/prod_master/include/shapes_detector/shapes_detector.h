@@ -47,7 +47,7 @@ public:
 
 	cv::Point get_middle(const std::vector<cv::Point> position);
 
-	void get_all_shapes(std::vector<cv::Point>& positions2D, std::vector<cv::Point3d>& positions3D, std::vector<unsigned int>& colours, std::vector<unsigned int>& shape_types, bool debug);
+	std::vector<int> get_object(bool debug);
 
 	// destructor
 	~ShapesDetector();

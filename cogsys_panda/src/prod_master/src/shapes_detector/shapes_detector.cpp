@@ -1,6 +1,5 @@
 #include "shapes_detector.h"
 
-
 ShapesDetector::ShapesDetector(ros::NodeHandle *n) {
 	init_calibration_data(n);
 
@@ -112,6 +111,10 @@ std::vector<unsigned int> ShapesDetector::get_shapes(const cv::Mat& img_gray, st
         cv::imshow("Polygons", drawing);
         cv::waitKey(0);
     }
+
+	for(unsigned int i_circ=0; i_circ<circles.size(); i_circ++) {
+		shape_types.push_back(1);
+	}
 	
     return shape_types;
 };
@@ -249,44 +252,55 @@ cv::Point ShapesDetector::get_middle(const std::vector<cv::Point> position) {
 };
 
 
-void ShapesDetector::get_all_shapes(std::vector<cv::Point>& positions2D, std::vector<cv::Point3d>& positions3D, std::vector<unsigned int>& colours, std::vector<unsigned int>& shape_types, bool debug) {
+//returns {a; b}
+//a = shape_type -> 1: circle, 3: triangle, 4: rectangle
+//b = colour -> 0: blue, 1: green, 2: red, 3: yellow
+// return {-1;-1} if no object was found
+std::vector<int> ShapesDetector::get_object(bool debug) {
 	cv::Mat img_bgr;
 	img_subs->getImageData(img_bgr);
 
 	cv::Mat img_gray = to_gray(img_bgr, debug);
 
-	std::vector<std::vector<cv::Point> > shape_positions;
+	std::vector<std::vector<cv::Point> > tri_rect_positions;
 	std::vector<cv::Vec3f> circles;
+	std::vector<unsigned int> colours;
+	std::vector<unsigned int> shape_types;
+	std::vector<cv::Point> positions2D;
 
-	shape_types = get_shapes(img_gray, shape_positions, circles, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, debug);
+	shape_types = get_shapes(img_gray, tri_rect_positions, circles, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, debug);
 
-	int size = shape_positions.size() + circles.size();
-	colours.reserve(size);
-	positions2D.reserve(size);
+	colours.reserve(shape_types.size());
+	positions2D.reserve(shape_types.size());
 
-	if (shape_positions.size() != 0) {
-		std::vector<unsigned int> shape_colours = get_colours(shape_positions, img_bgr, debug);
-		for (unsigned int i_shape = 0; i_shape < shape_positions.size(); i_shape++) {
-			positions2D.push_back(get_middle(shape_positions[i_shape]));
-			colours.push_back(shape_colours[i_shape]);
+	if (tri_rect_positions.size() != 0) {
+		std::vector<unsigned int> tri_rect_colours = get_colours(tri_rect_positions, img_bgr, debug);
+		for (unsigned int i_tr = 0; i_tr < tri_rect_positions.size(); i_tr++) {
+			positions2D.push_back(get_middle(tri_rect_positions[i_tr]));
+			colours.push_back(tri_rect_colours[i_tr]);
 		}
 	}
 	if (circles.size() != 0) {
 		std::vector<unsigned int> circle_colours = get_circle_colours(circles, img_bgr, debug);
-		for (unsigned int i = 0; i < circles.size(); i++) {
-			positions2D.push_back(cv::Point(circles[i][0], circles[i][1]));
-			shape_types.push_back(1);
-			colours.push_back(circle_colours[i]);
+		for (unsigned int i_circ = 0; i_circ < circles.size(); i_circ++) {
+			positions2D.push_back(cv::Point(circles[i_circ][0], circles[i_circ][1]));
+			colours.push_back(circle_colours[i_circ]);
 		}
 	}
 
-	// 2d to 3d position
-	for(unsigned int  i = 0; i < positions2D.size(); i++) {
-		cv::Point3d cur_position3D;
-		get_screen_to_3Dpoints(positions2D[i], cur_position3D, 0.0);
-		positions3D.push_back(cur_position3D);
-	}
+	int middleX = img_bgr.size().width/2;
+	int middleY = img_bgr.size().height/2;
+	int thres = 50; //maybe a different value possible
 
+	std::vector<int> object = {-1,-1};
+
+	for(unsigned int  i = 0; i < positions2D.size(); i++) {
+		if((middleX + thres) < positions2D[i].x && positions2D[i].x < (middleX + thres) && (middleY + thres) < positions2D[i].y && positions2D[i].y < (middleY + thres)) {
+			object[0] = shape_types[i];
+			object[1] = colours[i];
+		}
+	}
+	return object;
 };
 
 

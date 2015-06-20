@@ -164,8 +164,11 @@ bool ProdMaster::get_workbench_state(const std::vector<Component>& blueprint, st
 
         // TODO: returns the shape and color or None ?
         int shape, color;
-        // shapes_detector.julia();
-        // if (no shape) {
+        // std::vector<int> found_object = shapes_detector.get_object(false); //if {-1;-1}, there is no object
+	// shape = found_object[0];
+	// color = found_object[1];
+	//
+        // if (shape == -1 && colour == -1) {
         //     is_done = false;
         //     missing_components.push_back(Component(blueprint[i_slot_pos->slot]));
         //     continue;

@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
                 std::vector<cv::Point3d> positions3D1;
                 std::vector<unsigned int> colours1;
                 std::vector<unsigned int> shape_types1;
-                shapes_detector.get_all_shapes(positions1, positions3D1, colours1, shape_types1, false);
+             //   shapes_detector.get_all_shapes(positions1, positions3D1, colours1, shape_types1, false);
 
                 std::cout << shape_types1.size() << std::cout;
 
@@ -257,7 +257,7 @@ int main(int argc, char **argv) {
                     std::vector<cv::Point3d> positions3D2;
                     std::vector<unsigned int> colours2;
                     std::vector<unsigned int> shape_types2;
-                    shapes_detector.get_all_shapes(positions2, positions3D2, colours2, shape_types2, false);
+                   // shapes_detector.get_all_shapes(positions2, positions3D2, colours2, shape_types2, false);
 
                     std::cout << shape_types2.size() << std::cout;
 
