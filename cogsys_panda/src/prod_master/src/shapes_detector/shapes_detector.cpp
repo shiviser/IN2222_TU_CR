@@ -28,17 +28,24 @@ cv::Mat ShapesDetector::to_gray(const cv::Mat& img_bgr, bool debug) {
 
 
 std::vector<unsigned int> ShapesDetector::get_shapes(const cv::Mat& img_gray, std::vector<std::vector<cv::Point> > &shape_positions, std::vector<cv::Vec3f>& circles, int mode, int method, bool debug) {
-	cv::Mat img_bw; // = ShapesDetector::threshold_gray(img_gray, 80, cv::THRESH_BINARY, true);
-	cv::Canny(img_gray, img_bw, 0, 50, 3); 
+	cv::Mat img_g;
 
-	/* cv::namedWindow("B/W Image", CV_WINDOW_AUTOSIZE);
+	cv::GaussianBlur(img_gray, img_g, cv::Size(5,5), 4);
+cv::namedWindow("B/W Image", CV_WINDOW_AUTOSIZE);
+        cv::imshow("B/W Image", img_g);
+        cv::waitKey(0);
+
+	cv::Mat img_bw;
+
+	cv::Canny(img_g, img_bw,30,75, 3); //cv::Canny(img_g, img_bw,30,75, 3); (on bench)
+	 cv::namedWindow("B/W Image", CV_WINDOW_AUTOSIZE);
         cv::imshow("B/W Image", img_bw);
         cv::waitKey(0);
-		 */
+		 
 
     // extract the contours
     std::vector<std::vector<cv::Point> > contours;
-    findContours(img_bw.clone(), contours, mode, method);
+    cv::findContours(img_bw.clone(), contours, mode, method);
 
 	std::vector<std::vector<cv::Point> > polygons;
     polygons.resize(contours.size());
@@ -50,9 +57,9 @@ std::vector<unsigned int> ShapesDetector::get_shapes(const cv::Mat& img_gray, st
 	double maxContourSize = 0;
 
     for (size_t i = 0; i < contours.size(); i++) {
-        cv::approxPolyDP(cv::Mat(contours[i]), polygons[i], 4, true);
+        cv::approxPolyDP(cv::Mat(contours[i]), polygons[i], 5, true);
  
-		if (std::fabs(cv::contourArea(contours[i])) < 5000) //TODO
+		if (std::fabs(cv::contourArea(contours[i])) < 3000) //TODO
 		    continue;
 
 		if(polygons[i].size() == 3) {
@@ -91,9 +98,9 @@ std::vector<unsigned int> ShapesDetector::get_shapes(const cv::Mat& img_gray, st
 
         cv::Mat drawing;
         cvtColor(img_gray, drawing, CV_GRAY2BGR);
-        for (unsigned int i = 0; i < shape_positions.size(); i++) {
+        for (unsigned int i = 0; i < contours.size(); i++) {
 				cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-				cv::drawContours(drawing, shape_positions, i, color, 3, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+				cv::drawContours(drawing, contours, i, color, 3, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
         }
 
 		for( size_t i = 0; i < circles.size(); i++ )
@@ -205,6 +212,8 @@ std::vector<unsigned int> ShapesDetector::get_circle_colours(const std::vector<c
 		double norm_red = cv::norm(mean-red);
 		double norm_yellow = cv::norm(mean-yellow);
 
+		std::cout << "norms" << std::endl;
+
 		double norms[] = {norm_blue, norm_green, norm_red, norm_yellow};
 		double min = 300;
 		int index = 0;
@@ -214,6 +223,8 @@ std::vector<unsigned int> ShapesDetector::get_circle_colours(const std::vector<c
 				index = i_n;
 			}
 		}
+
+std::cout << "min index" << std::endl;
 		if(debug) {
 			switch(index)
 			{
@@ -245,8 +256,8 @@ cv::Point ShapesDetector::get_middle(const std::vector<cv::Point> position) {
 	for(unsigned int i = 0; i < position.size(); i++) {
 		middle = middle + position[i];
 	}
-		middle.x = middle.x * (1 / position.size());
-		middle.y = middle.y * (1 / position.size());
+	middle.x = middle.x * (1 / (float)position.size());
+	middle.y = middle.y * (1 / (float)position.size());
 
 	return middle;
 };
@@ -256,7 +267,7 @@ cv::Point ShapesDetector::get_middle(const std::vector<cv::Point> position) {
 //a = shape_type -> 1: circle, 3: triangle, 4: rectangle
 //b = colour -> 0: blue, 1: green, 2: red, 3: yellow
 // return {-1;-1} if no object was found
-std::vector<int> ShapesDetector::get_object(bool debug) {
+std::vector<int> ShapesDetector::get_object(int thres, bool debug) {
 	cv::Mat img_bgr;
 	img_subs->getImageData(img_bgr);
 
@@ -276,28 +287,36 @@ std::vector<int> ShapesDetector::get_object(bool debug) {
 	if (tri_rect_positions.size() != 0) {
 		std::vector<unsigned int> tri_rect_colours = get_colours(tri_rect_positions, img_bgr, debug);
 		for (unsigned int i_tr = 0; i_tr < tri_rect_positions.size(); i_tr++) {
+			std::cout << tri_rect_positions[i_tr] << std::endl;
 			positions2D.push_back(get_middle(tri_rect_positions[i_tr]));
 			colours.push_back(tri_rect_colours[i_tr]);
 		}
 	}
-	if (circles.size() != 0) {
+	if (circles.size() != 0) { //TODO what if circle at border of image
 		std::vector<unsigned int> circle_colours = get_circle_colours(circles, img_bgr, debug);
-		for (unsigned int i_circ = 0; i_circ < circles.size(); i_circ++) {
+		std::cout << "colours" << std::endl;
+		for (unsigned int i_circ = 0; i_circ < circles.size(); i_circ++) {	
 			positions2D.push_back(cv::Point(circles[i_circ][0], circles[i_circ][1]));
 			colours.push_back(circle_colours[i_circ]);
 		}
+		std::cout << "circles done" << std::endl;
 	}
 
 	int middleX = img_bgr.size().width/2;
 	int middleY = img_bgr.size().height/2;
-	int thres = 50; //maybe a different value possible
+	std::cout << "X: " << middleX << " Y: " << middleY << std::endl;
 
 	std::vector<int> object = {-1,-1};
 
+	std::cout << "objects: " << positions2D.size() << std::endl;
+	std::cout << positions2D << std::endl;
+
 	for(unsigned int  i = 0; i < positions2D.size(); i++) {
-		if((middleX + thres) < positions2D[i].x && positions2D[i].x < (middleX + thres) && (middleY + thres) < positions2D[i].y && positions2D[i].y < (middleY + thres)) {
+		if((middleX - thres) < positions2D[i].x && positions2D[i].x < (middleX + thres) && (middleY - thres) < positions2D[i].y && positions2D[i].y < (middleY + thres)) {
 			object[0] = shape_types[i];
 			object[1] = colours[i];
+			object[2] = positions2D.x;
+			object[3] = positions2D.y; //TODO 3D ?
 		}
 	}
 	return object;

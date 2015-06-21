@@ -47,7 +47,7 @@ public:
 
 	cv::Point get_middle(const std::vector<cv::Point> position);
 
-	std::vector<int> get_object(bool debug);
+	std::vector<int> get_object(int thres, bool debug);
 
 	// destructor
 	~ShapesDetector();
