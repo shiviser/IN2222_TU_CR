@@ -8,14 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   tf
-  trans_cam_to_gripper_srvs
-
+  std_msgs
+  prod_master_srvs
 )
 
 catkin_package(
  INCLUDE_DIRS include
 #  LIBRARIES mt_gripper_helper
- CATKIN_DEPENDS roscpp trans_cam_to_gripper_srvs
+ CATKIN_DEPENDS roscpp std_msgs prod_master_srvs
 #  DEPENDS system_lib
 )
 
@@ -50,7 +50,7 @@ add_executable(trans_cam_to_gripper_node ${HDRS} ${SRCS})
 target_link_libraries(trans_cam_to_gripper_node
     ${catkin_LIBRARIES}
 )
-add_dependencies(trans_cam_to_gripper_node trans_cam_to_gripper_srvs_generate_messages_cpp)
+add_dependencies(trans_cam_to_gripper_node prod_master_srvs_generate_messages_cpp)
 
 
 ##common commands for building c++ executables and libraries

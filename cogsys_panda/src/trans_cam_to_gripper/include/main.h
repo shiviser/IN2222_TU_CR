@@ -2,11 +2,15 @@
 
 #include <tf/transform_listener.h>
 #include <ros/ros.h>
-#include <trans_cam_to_gripper_srvs/ComputeTransformation.h>
+#include <std_msgs/String.h>
+#include <prod_master_srvs/ComputedTransformation.h>
 
 
-bool compute_transformation(trans_cam_to_gripper_srvs::ComputeTransformation::Request & req,
-                            trans_cam_to_gripper_srvs::ComputeTransformation::Response & res);
+ros::ServiceClient transformation_client;
+prod_master_srvs::ComputedTransformation transformation_srv;
+
+
+void compute_transformation(const std_msgs::String::ConstPtr& msg);
 
 
 int main(int argc, char **argv);

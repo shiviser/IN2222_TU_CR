@@ -2,9 +2,7 @@
 #include "main.h"
 
 
-bool compute_transformation(trans_cam_to_gripper_srvs::ComputeTransformation::Request & req,
-                            trans_cam_to_gripper_srvs::ComputeTransformation::Response & res) {
-
+void compute_transformation(const std_msgs::String::ConstPtr& msg) {
     tf::TransformListener listener;
 
     while (ros::ok()) {
@@ -33,11 +31,17 @@ bool compute_transformation(trans_cam_to_gripper_srvs::ComputeTransformation::Re
             // x -= 0.15;
 
             // respond
-            res.x = 1.0f;
-            res.y = 2.0f;
-            res.z = 3.0f;
-            ROS_INFO("sending back response: [%f] [%f] [%f]", (float) res.x, (float) res.y, (float) res.z);
-            return true;
+            transformation_srv.request.x = x;
+            transformation_srv.request.y = y;
+            transformation_srv.request.z = z;
+            ROS_INFO("sending back response: [%f] [%f] [%f]", (float) x, (float) y, (float) z);
+
+            if (transformation_client.call(transformation_srv)) {
+                break;
+            }
+            else {
+                ROS_ERROR("Failed to call service /prod_master_srvs/computed_transformation");
+            }
 
         }
         catch (tf::TransformException ex) {
@@ -46,7 +50,6 @@ bool compute_transformation(trans_cam_to_gripper_srvs::ComputeTransformation::Re
         }
         ros::spinOnce();
     }
-
 }
 
 
@@ -55,8 +58,10 @@ int main(int argc, char **argv) {
         ros::init(argc, argv, "trans_cam_to_gripper");
         ros::NodeHandle n;
 
-        ros::ServiceServer service = n.advertiseService("/trans_cam_to_gripper/compute_transformation", compute_transformation);
-        ROS_INFO("Ready to to compute transformation.");
+        transformation_client = n.serviceClient<prod_master_srvs::ComputedTransformation>("/prod_master_srvs/computed_transformation");
+
+        ros::Subscriber sub = n.subscribe("/prod_master/start_trans_listen", 1, compute_transformation);
+        ROS_INFO("Waiting to get to compute transformation instruction.");
         ros::spin();
 
         return 0;
