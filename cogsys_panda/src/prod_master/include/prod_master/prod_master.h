@@ -10,6 +10,8 @@
 #include <ros/ros.h>
 #include <opencv2/opencv.hpp>
 #include <QSettings>
+#include <std_msgs/String.h>
+#include <prod_master_srvs/ComputedTransformation.h>
 
 // custom includes
 #include "shapes_detector.h"
@@ -48,6 +50,8 @@ struct Slot {
 
 class ProdMaster {
 private:
+    ros::NodeHandle *ros_node;
+
     BotController* bot;
     ShapesDetector* shapes_detector;
 
@@ -59,6 +63,9 @@ private:
 
     cv::Point3f cambot_wait_pos;
     cv::Point3f gripperbot_wait_pos;
+
+    ros::Publisher transformation_pub;
+    ros::ServiceServer transformation_server;
 
     // parse_config_file helper
     void _parse_config_slots(QSettings &ini_file, std::string bot_name, std::vector<Slot>& slots_collection);
@@ -80,11 +87,16 @@ protected:
     void receive_components(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state);
 
     //
-    void broadcast_loc(const cv::Point3d position3D, std::string ref, std::string target_name);
+    void broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name);
+
+    //
+    cv::Point3d get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot);
 
     //
     void parse_config_file(std::string filepath);
 
+    //
+    void execute_remove_components(std::vector<int>& to_move, std::vector<Component>& workbench_state);
 
 public:
     // constructor
@@ -100,3 +112,6 @@ public:
     ~ProdMaster();
 
 };
+
+//bool store_trans_result(prod_master_srvs::ComputedTransformation::Request  &req,
+//                        prod_master_srvs::ComputedTransformation::Response &res, cv::Point3d& result);

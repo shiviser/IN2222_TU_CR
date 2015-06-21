@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>prod_master</name>
-  <version>1.0.0</version>
-  <description>The prod_master package</description>
+  <name>trans_cam_to_gripper</name>
+  <version>0.0.0</version>
+  <description>The trans_cam_to_gripper package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/prod_master</url> -->
+  <!-- <url type="website">http://wiki.ros.org/mt_gripper_helper</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -42,26 +42,15 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>comm_lib</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>camera_srvs</build_depend>
-  <build_depend>perception_srvs</build_depend>
-  <build_depend>perception_msgs</build_depend>
-  <build_depend>robot_control_srvs</build_depend>
-  <build_depend>gripper_control_srvs</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>prod_master_srvs</build_depend>
 
   <run_depend>roscpp</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>comm_lib</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>camera_srvs</run_depend>
-  <run_depend>perception_srvs</run_depend>
-  <run_depend>perception_msgs</run_depend>
-  <run_depend>robot_control_srvs</run_depend>
-  <run_depend>gripper_control_srvs</run_depend>
+  <run_depend>std_msgs</run_depend>
   <run_depend>prod_master_srvs</run_depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

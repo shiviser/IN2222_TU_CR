@@ -3,6 +3,8 @@
 
 
 ProdMaster::ProdMaster(ros::NodeHandle *n) {
+    ros_node = n;
+
     // config file for positions etc.
     parse_config_file("/config_data/config.ini");
 
@@ -11,6 +13,8 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
 
     bot = new BotController(n);
     shapes_detector = new ShapesDetector(n);
+
+    transformation_pub = n->advertise<std_msgs::String>("/prod_master/start_trans_listen", 1);
 };
 
 
@@ -126,7 +130,7 @@ void ProdMaster::parse_config_file(std::string filepath) {
 };
 
 
-void ProdMaster::broadcast_loc(const cv::Point3d position3D, std::string ref, std::string target_name) {
+void ProdMaster::broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name) {
 
     static tf::TransformBroadcaster br;
     tf::Transform transform;
@@ -151,8 +155,8 @@ void ProdMaster::broadcast_loc(const cv::Point3d position3D, std::string ref, st
 bool ProdMaster::get_workbench_state(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
     bool is_done = true;
 
-    // important: move gripper bot to safe position
-    bot->movetohome(false, true);
+    // important: move gripper bot to wait position
+    bot->movegripperbot(gripperbot_wait_pos.x, gripperbot_wait_pos.y, gripperbot_wait_pos.z);
 
     // slots occupancy by the available objects on the workbench
     int TOTAL_SLOTS = workbench_slots_cambot.size();
@@ -206,9 +210,44 @@ bool ProdMaster::get_workbench_state(const std::vector<Component>& blueprint, st
 };
 
 
+void ProdMaster::execute_remove_components(std::vector<int>& to_move, std::vector<Component>& workbench_state) {
+    // TODO if time permits, try to get movements in a smooth path: 3 or 4 points trajectory
+
+    for (int i_comp = 0; i_comp < to_move.size(); ++i_comp) {
+        // go to start position
+        bot->movetohome(false, true);
+
+        // initate move
+        bot->opengripper();
+
+        // move to piece
+        Slot piece_slot = workbench_slots_gripperbot[workbench_state[i_comp].slot];
+        bot->movegripperbot(piece_slot.coord.x, piece_slot.coord.y, piece_slot.coord.z);
+
+        // hold the objecct
+        bot->closegripper();
+
+        // remove
+        if (workbench_state[i_comp].move_to == Component::REMOVE) {
+            // move to collector
+            bot->movegripperbot(collector_slot.coord.x, collector_slot.coord.y, collector_slot.coord.z);
+        }
+
+        // to move to different location
+        else {
+            Slot move_to = workbench_slots_gripperbot[workbench_state[i_comp].move_to];
+            bot->movegripperbot(move_to.coord.x, move_to.coord.y, move_to.coord.z);
+        }
+
+        // drop
+        bot->opengripper();
+    }
+};
+
+
 void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     // important: move cam bot to safe position
-    bot->movetohome(true, true);
+    bot->movecambot(cambot_wait_pos.x, cambot_wait_pos.y, cambot_wait_pos.z);
 
     // stores indices of the workbench_state that corresponds to components to be moved/shuffled
     // moved: consists of to be removed or moved to another position
@@ -226,8 +265,10 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
             continue;
         }
 
-        // TODO: do we want to store missing compoments in the state ??
-        // makes element access by slot number easy but then we have to check if it is an object or missing object
+        // TODO: we're assuming no shuffling at the moment
+        else {
+            to_move.push_back(i_comp);
+        }
         // movements can be thought of as a graph - a node represent a slot number and edge between two  connecting
         // nodes represent movement from first edge to second,
         // cycles in this graph means shuffles, solve them first
@@ -235,14 +276,51 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
 
     }
 
-    // we might want to have two helper functions - for shuffling and for moving & removing
+    // remove and move
+    execute_remove_components(to_move, workbench_state);
 
-    // if time permits, try to get movement in a smooth path: 3/4 points trajectory
+    // TODO: shuffle
 };
 
 
 void ProdMaster::receive_components(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state) {
+    // TODO: detect
+    bool detected = true;
+    // std::vector<int> found_object = shapes_detector.get_object(false); //if {-1;-1}, there is no object
 
+    if (detected) {
+
+    }
+
+};
+
+
+// TODO: maybe make it a class function
+//bool store_trans_result(prod_master_srvs::ComputedTransformation::Request  &req,
+//         prod_master_srvs::ComputedTransformation::Response &res) {
+//    // storing received data
+////    result.x = req.x;
+////    result.y = req.y;
+////    result.z = req.z;
+//
+//    // received successfully
+//    res.status = true;
+//    return true;
+//}
+
+cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
+//    transformation_pub.publish("start");
+
+    // TODO: http://answers.ros.org/question/12045/how-to-deliver-arguments-to-a-callback-function/
+    cv::Point3d result;
+//    transformation_server = ros_node->advertiseService("/prod_master_srvs/computed_transformation", store_trans_result);
+
+    while (true) {
+        broadcast_loc(pos3D_wrt_cambot, "cambot_wrist", "TARGET_BOX_0");
+    }
+
+    // TODO: remove
+    return cv::Point3d(1.0f, 1.0f, 10.f);
 };
 
 
@@ -269,18 +347,13 @@ int ProdMaster::produce() {
         // nothing to get so we are done
         if (missing_components.size() == 0) return 0;
 
-        // order components
+        // order components - uses a (sync) service to robotino in the robotino_controller
         order_components(missing_components);
-
-        // wait until robotino is back by:
-        // return a code (let's say 1)
-        // and the main keeps listening to the robotino
-        // and reacts based on if the produce returned 1 otherwise tells robotino that his communication is unexpected
 
         // fetch stuff from robotino
         receive_components(blueprint, workbench_state);
     }
-}
+};
 
 
 ProdMaster::~ProdMaster() {
