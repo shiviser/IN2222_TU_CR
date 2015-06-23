@@ -191,11 +191,10 @@ std::vector<unsigned int> ShapesDetector::get_colours(const std::vector<std::vec
 };
 
 
-std::vector<unsigned int> ShapesDetector::get_circle_colours(const std::vector<cv::Vec3f>& circles, const cv::Mat& image, bool debug) {
+unsigned int ShapesDetector::get_circle_colour(const cv::Vec3f& circle, const cv::Mat& image, bool debug) {
 	std::vector<unsigned int> colours;
-	for (size_t i = 0; i < circles.size(); i++)
-    {
-		cv::Mat roi = image(cv::Range(circles[i][1]-circles[i][2], circles[i][1]+circles[i][2]+1), cv::Range(circles[i][0]-circles[i][2], circles[i][0]+circles[i][2]+1));
+
+		cv::Mat roi = image(cv::Range(circle[1]-circle[2], circle[1]+circle[2]+1), cv::Range(circle[0]-circle[2], circle[0]+circle[2]+1));
 		cv::Mat1b mask(roi.rows, roi.cols);
 		cv::Scalar mean = cv::mean(roi, mask);
 
@@ -224,7 +223,6 @@ std::vector<unsigned int> ShapesDetector::get_circle_colours(const std::vector<c
 			}
 		}
 
-std::cout << "min index" << std::endl;
 		if(debug) {
 			switch(index)
 			{
@@ -242,11 +240,8 @@ std::cout << "min index" << std::endl;
 				break;
 			}
 		}
-
-		colours.push_back(index);
-    }
-
-	return colours;
+		
+	return index;
 };
 
 
@@ -292,12 +287,19 @@ std::vector<int> ShapesDetector::get_object(int thres, bool debug) {
 			colours.push_back(tri_rect_colours[i_tr]);
 		}
 	}
-	if (circles.size() != 0) { //TODO what if circle at border of image
-		std::vector<unsigned int> circle_colours = get_circle_colours(circles, img_bgr, debug);
+	if (circles.size() != 0) { 
 		std::cout << "colours" << std::endl;
-		for (unsigned int i_circ = 0; i_circ < circles.size(); i_circ++) {	
-			positions2D.push_back(cv::Point(circles[i_circ][0], circles[i_circ][1]));
-			colours.push_back(circle_colours[i_circ]);
+		for (unsigned int i_circ = 0; i_circ < circles.size(); i_circ++) {
+			//don't take the circles that are not fully in the image
+			int xc = circles[i_circ][0];
+			int yc = circles[i_circ][1];
+			int rc = circles[i_circ][2];
+			int img_width = img_bgr.size().width;
+			int img_height = img_bgr.size().height;
+			if((xc+rc)<=img_width && (yc+rc)<=img_height && (xc-rc) >= 0 && (yc-rc) >= 0) {
+				positions2D.push_back(cv::Point(circles[i_circ][0], circles[i_circ][1]));
+				colours.push_back(get_circle_colour(circles[i_circ], img_bgr, debug));
+			}						
 		}
 		std::cout << "circles done" << std::endl;
 	}
@@ -315,8 +317,14 @@ std::vector<int> ShapesDetector::get_object(int thres, bool debug) {
 		if((middleX - thres) < positions2D[i].x && positions2D[i].x < (middleX + thres) && (middleY - thres) < positions2D[i].y && positions2D[i].y < (middleY + thres)) {
 			object[0] = shape_types[i];
 			object[1] = colours[i];
-			object[2] = positions2D.x;
-			object[3] = positions2D.y; //TODO 3D ?
+			object[2] = positions2D[i].x;
+			object[3] = positions2D[i].y;
+			//3D
+			cv::Point3d point3D;
+			get_screen_to_3Dpoints(positions2D[i], point3D, 0);
+			//object[2]=point3D.x;
+			//object[3]=point3D.y;
+			//object[4]=point3D.z;
 		}
 	}
 	return object;

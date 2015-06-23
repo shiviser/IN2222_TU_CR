@@ -43,7 +43,7 @@ public:
 
 	std::vector<unsigned int> get_colours(const std::vector<std::vector<cv::Point> >& shape_positions, const cv::Mat& image, bool debug=false);
     
-	std::vector<unsigned int> get_circle_colours(const std::vector<cv::Vec3f>& circles, const cv::Mat& image, bool debug);
+	unsigned int get_circle_colour(const cv::Vec3f& circle, const cv::Mat& image, bool debug);
 
 	cv::Point get_middle(const std::vector<cv::Point> position);
 
