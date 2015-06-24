@@ -64,6 +64,8 @@ private:
     cv::Point3f cambot_wait_pos;
     cv::Point3f gripperbot_wait_pos;
 
+    bool ADVERSARIAL_ENV;
+
     ros::Publisher transformation_pub;
     ros::ServiceServer transformation_server;
 
@@ -75,7 +77,7 @@ private:
 
 protected:
     //
-    bool get_workbench_state(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state, std::vector<Component>& missing_components);
+    bool initiate_production_state(std::vector<Component>& workbench_state, std::vector<Component>& missing_components);
 
     //
     void rearrange_workbench(std::vector<Component>& workbench_state);
@@ -84,7 +86,7 @@ protected:
     void order_components(std::vector<Component>& missing_components);
 
     //
-    void receive_components(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state);
+    void receive_components(std::vector<Component>& workbench_state);
 
     //
     void broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name);
@@ -96,7 +98,10 @@ protected:
     void parse_config_file(std::string filepath);
 
     //
-    void execute_remove_components(std::vector<int>& to_move, std::vector<Component>& workbench_state);
+    void execute_move_components(std::vector<int>& to_move, std::vector<Component>& workbench_state);
+
+    //
+    bool update_missing(const std::vector<Component>& workbench_state, std::vector<Component>& missing_components);
 
 public:
     // constructor

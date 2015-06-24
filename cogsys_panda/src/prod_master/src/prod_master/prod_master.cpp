@@ -127,6 +127,19 @@ void ProdMaster::parse_config_file(std::string filepath) {
 
     _parse_config_robots_pos(ini_file, "GRIPPERBOT", gripperbot_wait_pos);
     // END DIFFERENT ROBOTS POSITIONS
+
+    // START MISCELLANEOUS
+    ini_file.beginGroup("MISC");
+
+    // flag that says if the environment is adversarial;
+    // if true (non zero) we use camera everything to update workbench state
+    target_name.str("");
+    target_name << "ADVERSARIAL_ENV";
+    ADVERSARIAL_ENV = (bool)ini_file.value(target_name.str().c_str(), 0).toString().toInt();
+    std::cout << "ADVERSARIAL_ENV: "<< ADVERSARIAL_ENV << std::endl;
+
+    ini_file.endGroup();
+    // END MISCELLANEOUS
 };
 
 
@@ -152,15 +165,19 @@ void ProdMaster::broadcast_loc(const cv::Point3d& position3D, std::string ref, s
 };
 
 
-bool ProdMaster::get_workbench_state(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
+bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
+    // clear previous data
+    workbench_state.clear();
+    missing_components.clear();
+
     bool is_done = true;
 
     // important: move gripper bot to wait position
     bot->movegripperbot(gripperbot_wait_pos.x, gripperbot_wait_pos.y, gripperbot_wait_pos.z);
 
-    // slots occupancy by the available objects on the workbench
-    int TOTAL_SLOTS = workbench_slots_cambot.size();
-    bool *occupied = new bool[TOTAL_SLOTS]();
+    // total slots used in the blueprint; sometimes we might leave the last slot for shuffling purposes
+    int TOTAL_SLOTS_USED = blueprint.size();
+    bool *occupied = new bool[TOTAL_SLOTS_USED]();
 
     // getting present components on the workbench
     for (auto i_slot_pos = workbench_slots_cambot.begin(); i_slot_pos != workbench_slots_cambot.end(); ++i_slot_pos) {
@@ -210,7 +227,37 @@ bool ProdMaster::get_workbench_state(const std::vector<Component>& blueprint, st
 };
 
 
-void ProdMaster::execute_remove_components(std::vector<int>& to_move, std::vector<Component>& workbench_state) {
+bool ProdMaster::update_missing(const std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
+    // clear previous data
+    missing_components.clear();
+
+    // total slots used in the blueprint; sometimes we might leave the last slot for shuffling purposes
+    int TOTAL_SLOTS_USED = blueprint.size();
+    bool *missing = new bool[TOTAL_SLOTS_USED]();
+    // assume everything missing by default
+    std::fill_n(missing, TOTAL_SLOTS_USED, true);
+
+    // find what's not missing
+    for (auto i_workbench_slot = workbench_state.begin(); i_workbench_slot != workbench_state.end(); ++i_workbench_slot) {
+        // current workbench piece is not meant to be removed
+        if (i_workbench_slot->move_to != Component::REMOVE) {
+            // exclude from missing; note we use the move_to not slot assuming that the piece can still need moving
+            missing[i_workbench_slot->move_to] = false;
+        }
+    }
+
+    // create list of the actually missing components
+    for (int i_slot = 0; i_slot < TOTAL_SLOTS_USED; ++i_slot) {
+        if (missing[i_slot]) {
+            missing_components.push_back(blueprint[i_slot]);
+        }
+    }
+
+    return (missing_components.size() == 0);
+};
+
+
+void ProdMaster::execute_move_components(std::vector<int>& to_move, std::vector<Component>& workbench_state) {
     // TODO if time permits, try to get movements in a smooth path: 3 or 4 points trajectory
 
     for (int i_comp = 0; i_comp < to_move.size(); ++i_comp) {
@@ -220,23 +267,32 @@ void ProdMaster::execute_remove_components(std::vector<int>& to_move, std::vecto
         // initate move
         bot->opengripper();
 
+        // current piece
+        auto cur_piece = workbench_state.begin() + i_comp;
+
         // move to piece
-        Slot piece_slot = workbench_slots_gripperbot[workbench_state[i_comp].slot];
+        Slot piece_slot = workbench_slots_gripperbot[cur_piece->slot];
         bot->movegripperbot(piece_slot.coord.x, piece_slot.coord.y, piece_slot.coord.z);
 
-        // hold the objecct
+        // hold the object
         bot->closegripper();
 
         // remove
-        if (workbench_state[i_comp].move_to == Component::REMOVE) {
+        if (cur_piece->move_to == Component::REMOVE) {
             // move to collector
             bot->movegripperbot(collector_slot.coord.x, collector_slot.coord.y, collector_slot.coord.z);
+
+            // remove piece from workbench state
+            workbench_state.erase(cur_piece);
         }
 
         // to move to different location
         else {
-            Slot move_to = workbench_slots_gripperbot[workbench_state[i_comp].move_to];
+            Slot move_to = workbench_slots_gripperbot[cur_piece->move_to];
             bot->movegripperbot(move_to.coord.x, move_to.coord.y, move_to.coord.z);
+
+            // update workbench piece slot
+            cur_piece->slot = cur_piece->move_to;
         }
 
         // drop
@@ -277,13 +333,13 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     }
 
     // remove and move
-    execute_remove_components(to_move, workbench_state);
+    execute_move_components(to_move, workbench_state);
 
     // TODO: shuffle
 };
 
 
-void ProdMaster::receive_components(const std::vector<Component>& blueprint, std::vector<Component>& workbench_state) {
+void ProdMaster::receive_components(std::vector<Component>& workbench_state) {
     // TODO: detect
     bool detected = true;
     // std::vector<int> found_object = shapes_detector.get_object(false); //if {-1;-1}, there is no object
@@ -325,8 +381,12 @@ cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambo
 
 
 void ProdMaster::order_components(std::vector<Component>& missing_components) {
-    // talk to Robotino
-    // move cambot and gripper bot to perpendicularly sidewise-outward position
+    // move cambot and gripper bot to wait position for the robotino
+    bot->movecambot(cambot_wait_pos.x, cambot_wait_pos.y, cambot_wait_pos.z);
+    bot->movegripperbot(gripperbot_wait_pos.x, gripperbot_wait_pos.y, gripperbot_wait_pos.z);
+
+    // TODO: talk to Robotino
+
 };
 
 
@@ -335,24 +395,35 @@ int ProdMaster::produce() {
     std::vector<Component> workbench_state;
     std::vector<Component> missing_components;
 
-    // until production done
-    while(true) {
-        // get state of the workbench
-        is_done = get_workbench_state(blueprint, workbench_state, missing_components);
-        if (is_done) return 0;
+    // get state of the workbench by camera detection
+    is_done = initiate_production_state(workbench_state, missing_components);
 
+    // until production done
+    while(!is_done) {
         // rearranging involves moving components to their correct positions
         rearrange_workbench(workbench_state);
 
         // nothing to get so we are done
-        if (missing_components.size() == 0) return 0;
+        if (missing_components.size() == 0) break;
 
         // order components - uses a (sync) service to robotino in the robotino_controller
         order_components(missing_components);
 
         // fetch stuff from robotino
-        receive_components(blueprint, workbench_state);
+        receive_components(workbench_state);
+
+        if (!ADVERSARIAL_ENV) {
+            // assuming the state of the workbench is only changed by the gripperbot and that it works perfectly
+            is_done = update_missing(workbench_state, missing_components);
+        }
+        else {
+            // here we use detection to update state again
+            is_done = initiate_production_state(workbench_state, missing_components);
+        }
     }
+
+    // done
+    return 0;
 };
 
 
