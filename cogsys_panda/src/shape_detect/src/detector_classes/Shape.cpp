@@ -48,3 +48,11 @@ shape_t Shape::getShape() {
 void Shape::setShape(shape_t s) {
 	this->shape = s;
 }
+
+int Shape::getRadius() {
+	return this->radius;
+}
+
+void Shape::setRadius(int r) {
+	this->radius = r;
+}

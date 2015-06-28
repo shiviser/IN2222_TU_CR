@@ -171,9 +171,6 @@ int main(int argc, char **argv)
 		waitKey(30);
 #else
 		ros::spin();
-		//if(glob_shapes_detector->img_info.data)
-			//cv::imshow("Detected Shapes",glob_shapes_detector->img_info);
-		//waitKey(30);
 #endif
 	}
 

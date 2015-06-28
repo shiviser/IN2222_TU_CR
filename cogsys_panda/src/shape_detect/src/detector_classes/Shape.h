@@ -26,10 +26,14 @@ public:
 	shape_t getShape();
 	void setShape(shape_t s);
 
+	int getRadius();
+	void setRadius(int r);
+
 
 private:
 	int xPos, yPos;
 	colour_t colour;
 	shape_t shape;
+	int radius;
 };
 

@@ -4,11 +4,11 @@
 #define DEBUG 1
 
 //Calibration Values for each colour
-#define RED_H_MIN		170
-#define RED_H_MAX		186
-#define RED_S_MIN		72
+#define RED_H_MIN		121//170
+#define RED_H_MAX		237//186
+#define RED_S_MIN		76//72
 #define RED_S_MAX		255
-#define RED_V_MIN		100
+#define RED_V_MIN		72//100
 #define RED_V_MAX		255
 
 #define BLUE_H_MIN		73
