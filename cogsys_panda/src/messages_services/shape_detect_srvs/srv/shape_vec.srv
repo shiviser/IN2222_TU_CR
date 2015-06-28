@@ -1,0 +1,3 @@
+int16 filter  # -1: look for only the object in the center of the image, 0..240: distance from all edges [in pixels] where no objects will be detected
+---
+shape[] shapes
