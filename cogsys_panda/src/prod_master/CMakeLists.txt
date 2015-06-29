@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   perception_srvs
   robot_control_srvs
   gripper_control_srvs
+  shape_detect_srvs
   prod_master_srvs
 )
 
@@ -27,7 +28,7 @@ INCLUDE(${PROJECT_SOURCE_DIR}/Modules/FindEigen3.cmake)
 catkin_package(
  INCLUDE_DIRS include include/shapes_detector include/bot_controller include/prod_master
  LIBRARIES prod_master
- CATKIN_DEPENDS roscpp roslib comm_lib prod_master_srvs
+ CATKIN_DEPENDS roscpp roslib comm_lib shape_detect_srvs prod_master_srvs
 #  DEPENDS system_lib
 )
 
@@ -88,7 +89,7 @@ target_link_libraries(prod_master_node
     ${QT_QTCORE_LIBRARY}
     ${OpenCV_LIBRARIES}
 )
-add_dependencies(prod_master_node prod_master_srvs_generate_messages_cpp)
+add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
 
 
 #cmake_minimum_required(VERSION 2.8.3)

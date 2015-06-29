@@ -8,8 +8,10 @@
 
 // third parties
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <opencv2/opencv.hpp>
 #include <QSettings>
+#include <QFileInfo>
 #include <std_msgs/String.h>
 #include <prod_master_srvs/ComputedTransformation.h>
 

@@ -183,20 +183,17 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
     for (auto i_slot_pos = workbench_slots_cambot.begin(); i_slot_pos != workbench_slots_cambot.end(); ++i_slot_pos) {
         bot->movecambot(i_slot_pos->coord.x, i_slot_pos->coord.y, i_slot_pos->coord.z);
 
-        // TODO: returns the shape and color or None ?
-        int shape, color;
-        // std::vector<int> found_object = shapes_detector.get_object(false); //if {-1;-1}, there is no object
-	// shape = found_object[0];
-	// color = found_object[1];
-	//
-        // if (shape == -1 && colour == -1) {
-        //     is_done = false;
-        //     missing_components.push_back(Component(blueprint[i_slot_pos->slot]));
-        //     continue;
-        // }
+        Shape found_object;
+        bool found = shapes_detector->get_center_shape(found_object); //if {-1;-1}, there is no object
+
+         if (!found) {
+             is_done = false;
+             missing_components.push_back(Component(blueprint[i_slot_pos->slot]));
+             continue;
+         }
 
         // initially every component detected is assumed to have to be removed
-        Component cur_comp(shape, color, i_slot_pos->slot, Component::REMOVE);
+        Component cur_comp(found_object.shape, found_object.colour, i_slot_pos->slot, Component::REMOVE);
 
         // find if component has to be retained by using the blueprint and which available slot number
         int move_to;
