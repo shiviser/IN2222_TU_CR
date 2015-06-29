@@ -1,14 +1,14 @@
 #pragma once
 
 //#define CALIBRATION_MODE
-#define DEBUG 1
+#define DEBUG 0
 
 //Calibration Values for each colour
-#define RED_H_MIN		121//170
-#define RED_H_MAX		237//186
-#define RED_S_MIN		76//72
+#define RED_H_MIN		170//121
+#define RED_H_MAX		186//237
+#define RED_S_MIN		72//76
 #define RED_S_MAX		255
-#define RED_V_MIN		72//100
+#define RED_V_MIN		100//72
 #define RED_V_MAX		255
 
 #define BLUE_H_MIN		73

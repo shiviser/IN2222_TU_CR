@@ -97,7 +97,7 @@ bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
 	//find contours of filtered image using openCV findContours function
 	cv::findContours(HSV_img,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
 	cv::Canny(HSV_img, edges_map, 5, 250, 7, true);
-	cv::HoughCircles(edges_map, circles, CV_HOUGH_GRADIENT, 1, 100, 180, 30 ,50, 210);
+	cv::HoughCircles(edges_map, circles, CV_HOUGH_GRADIENT, 1, 100, 180, 30 ,20, 210);
 	
 	//use moments method to find the position
 	double refArea = 0;
@@ -221,7 +221,7 @@ void ShapesDetector::display_shapes(int thres) {
 	line( img_info, Point(x_max_box,y_min_box), Point(x_min_box,y_min_box), cv::Scalar( 0, 0, 0 ), 2, 8 );
 	
 	cv::imshow("Detected Shapes",img_info);
-	waitKey(30);
+	waitKey(50);
 }
 
 ShapesDetector::~ShapesDetector() {
