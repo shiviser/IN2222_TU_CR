@@ -1,0 +1,23 @@
+%Matlab code
+
+obj_pos_pix = [512;261]; %Position of shape
+
+%Shape offset to midpoint of image
+x_pix_offset = -320;
+y_pix_offset = -240;
+
+%factor of pixels to meter
+pix_m_fact = 0.145/180; %[m/pix] -> Has to be measured for the robotino
+
+%object position in camera frame in meter
+cam_obj_pos_m = [1 0 ; 0 -1] * (obj_pos_pix+[x_pix_offset;y_pix_offset])*pix_m_fact;
+
+%object position in gripper frame in meter
+grip_obj_pos_m = cam_obj_pos_m + [0;0.37];
+
+% NOTICE:
+% gripper arm cannot move further than -0.12m in the x-direction.
+
+% Distance between zero position of cambot and gripperbot = 0.65m
+
+
