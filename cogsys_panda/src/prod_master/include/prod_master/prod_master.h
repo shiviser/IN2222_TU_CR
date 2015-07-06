@@ -93,10 +93,13 @@ protected:
     void receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components);
 
     //
-//    void broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name);
+    //  void broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name);
 
     //
-//    cv::Point3d get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot);
+    cv::Point3f get_position_wrt_gripper(int img_point_x, int img_point_y);
+
+    //
+    //  cv::Point3d get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot);
 
     //
     void parse_config_file(std::string filepath);

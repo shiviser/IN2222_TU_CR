@@ -351,9 +351,8 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
                  i_missing != missing_components.end(); /*increment in code*/) {
                 // scanned object matches a missing (required) object
                 if (i_missing->color == cur_item.colour && i_missing->shape == cur_item.shape) {
-                    // TODO: convert to 3D location, get position vector wrt cambase then convert to gripperbot base
-                    cv::Point3f pick_up_loc;
-                    // write code here
+                    // convert to 3D location, get position of object in image to gripperbot base
+                    cv::Point3f pick_up_loc = get_position_wrt_gripper(cur_item.xPos, cur_item.yPos);
 
                     // ask robotino to move to gripper
                     robotino->move_to_gripperbot();
@@ -408,6 +407,11 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
 //    res.status = true;
 //    return true;
 //}
+
+cv::Point3f ProdMaster::get_position_wrt_gripper(int img_point_x, int img_point_y) {
+    // TODO
+    return cv::Point3f(0, 0, 0);
+}
 
 //cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
 ////    transformation_pub.publish("start");
