@@ -336,14 +336,33 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
 };
 
 
-void ProdMaster::receive_components(std::vector<Component>& workbench_state) {
-    // TODO: detect
-    bool detected = true;
-    // std::vector<int> found_object = shapes_detector.get_object(false); //if {-1;-1}, there is no object
+void ProdMaster::receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
+//    std::vector<Shape> found_objects = shapes_detector->get_shapes();
+//
+//    if (!found_objects.empty()) {
+//        // because we expect only one shape to be detected
+//        Shape shape = found_objects[0];
+//
+//        for (auto i_missing = missing_components.begin(); i_missing != missing_components.end(); ++i_missing) {
+//            // current workbench piece is not meant to be removed
+//            if (i_workbench_slot->move_to != Component::REMOVE) {
+//                // exclude from missing; note we use the move_to not slot assuming that the piece can still need moving
+//                missing[i_workbench_slot->move_to] = false;
+//            }
+//        }
+//
+//        // TODO: convert to 3D location, get position vector wrt cambase then convert to gripperbot base
+//        cv::Point3f pick_up_loc;
+//        // write code here
+//
+//        bot->movegripperbot(pick_up_loc.x, pick_up_loc.y, pick_up_loc.z);
+//
+//        // hold the object
+//        bot->closegripper();
+//
+//
+//    }
 
-    if (detected) {
-
-    }
 
 };
 
@@ -407,7 +426,7 @@ int ProdMaster::produce() {
         order_components(missing_components);
 
         // fetch stuff from robotino
-        receive_components(workbench_state);
+        receive_components(workbench_state, missing_components);
 
         if (!ADVERSARIAL_ENV) {
             // assuming the state of the workbench is only changed by the gripperbot and that it works perfectly

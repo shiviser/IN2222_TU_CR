@@ -88,7 +88,7 @@ protected:
     void order_components(std::vector<Component>& missing_components);
 
     //
-    void receive_components(std::vector<Component>& workbench_state);
+    void receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components);
 
     //
     void broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name);
