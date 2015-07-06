@@ -175,10 +175,10 @@ int main(int argc, char **argv)
 
 		waitKey(30);
 #else
-		ros::spin();
-		//ros::spinOnce();
-		//waitKey(30);
-		//glob_shapes_detector->find_shapes(40, DEBUG, HSV_Types);
+		//ros::spin();
+		ros::spinOnce();
+		waitKey(30);
+		glob_shapes_detector->find_shapes(40, DEBUG, HSV_Types);
 #endif
 	}
 
