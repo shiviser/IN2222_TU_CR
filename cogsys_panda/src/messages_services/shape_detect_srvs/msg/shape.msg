@@ -1,4 +1,4 @@
 int32 xPos
 int32 yPos
-string colour
-string shape
+int32 colour
+int32 shape

@@ -92,7 +92,11 @@ bool srv_call_shapes(shape_detect_srvs::shape_vec::Request  &req, shape_detect_s
 	temp_shape.xPos = glob_shapes_detector->Shapes[i].getXPos();
   	temp_shape.yPos = glob_shapes_detector->Shapes[i].getYPos();
 	
-	switch(glob_shapes_detector->Shapes[i].getColour()) {
+	temp_shape.colour = glob_shapes_detector->Shapes[i].getColour();
+	temp_shape.shape = glob_shapes_detector->Shapes[i].getShape();
+	
+	
+	/*switch(glob_shapes_detector->Shapes[i].getColour()) {
 		case red:
 			temp_shape.colour = "red";
 			break;
@@ -121,8 +125,9 @@ bool srv_call_shapes(shape_detect_srvs::shape_vec::Request  &req, shape_detect_s
 			break;		
 		default:
 			break;
-	}
-
+	}*/
+	
+	
   	res.shapes.push_back(temp_shape);
   }
 
