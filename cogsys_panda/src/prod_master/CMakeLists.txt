@@ -93,7 +93,7 @@ target_link_libraries(prod_master_node
     ${QT_QTCORE_LIBRARY}
     ${OpenCV_LIBRARIES}
 )
-add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp robotino_controller_srvs_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
+add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp robotino_controller_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
 
 
 #cmake_minimum_required(VERSION 2.8.3)

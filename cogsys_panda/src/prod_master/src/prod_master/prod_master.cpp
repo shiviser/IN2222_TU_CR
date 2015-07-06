@@ -12,6 +12,7 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
     // load_production("/config_data/production.ini");
 
     bot = new BotController(n);
+    robotino = new RobotinoController(n);
     shapes_detector = new ShapesDetector(n);
 
     transformation_pub = n->advertise<std_msgs::String>("/prod_master/start_trans_listen", 1);
@@ -143,26 +144,26 @@ void ProdMaster::parse_config_file(std::string filepath) {
 };
 
 
-void ProdMaster::broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name) {
-
-    static tf::TransformBroadcaster br;
-    tf::Transform transform;
-    transform.setOrigin(tf::Vector3(position3D.x/1000.0,
-                                    position3D.y/1000.0,
-                                    position3D.z/1000.0));
-    tf::Quaternion q;
-    q.setX(0.0);
-    q.setY(0.0);
-    q.setZ(0.0);
-    q.setW(1.0);
-    transform.setRotation(q);
-
-    // TODO: remove later
-    std::cout << "broadcasted" << std::endl;
-
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), ref, target_name));
-
-};
+//void ProdMaster::broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name) {
+//
+//    static tf::TransformBroadcaster br;
+//    tf::Transform transform;
+//    transform.setOrigin(tf::Vector3(position3D.x/1000.0,
+//                                    position3D.y/1000.0,
+//                                    position3D.z/1000.0));
+//    tf::Quaternion q;
+//    q.setX(0.0);
+//    q.setY(0.0);
+//    q.setZ(0.0);
+//    q.setW(1.0);
+//    transform.setRotation(q);
+//
+//    // TODO: remove later
+//    std::cout << "broadcasted" << std::endl;
+//
+//    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), ref, target_name));
+//
+//};
 
 
 bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
@@ -183,7 +184,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
     for (auto i_slot_pos = workbench_slots_cambot.begin(); i_slot_pos != workbench_slots_cambot.end(); ++i_slot_pos) {
         bot->movecambot(i_slot_pos->coord.x, i_slot_pos->coord.y, i_slot_pos->coord.z);
 
-        Shape found_object;
+        shape_detect_srvs::shape found_object;
         bool found = shapes_detector->get_center_shape(found_object); //if {-1;-1}, there is no object
 
          if (!found) {
@@ -337,33 +338,61 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
 
 
 void ProdMaster::receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
-//    std::vector<Shape> found_objects = shapes_detector->get_shapes();
-//
-//    if (!found_objects.empty()) {
-//        // because we expect only one shape to be detected
-//        Shape shape = found_objects[0];
-//
-//        for (auto i_missing = missing_components.begin(); i_missing != missing_components.end(); ++i_missing) {
-//            // current workbench piece is not meant to be removed
-//            if (i_workbench_slot->move_to != Component::REMOVE) {
-//                // exclude from missing; note we use the move_to not slot assuming that the piece can still need moving
-//                missing[i_workbench_slot->move_to] = false;
-//            }
-//        }
-//
-//        // TODO: convert to 3D location, get position vector wrt cambase then convert to gripperbot base
-//        cv::Point3f pick_up_loc;
-//        // write code here
-//
-//        bot->movegripperbot(pick_up_loc.x, pick_up_loc.y, pick_up_loc.z);
-//
-//        // hold the object
-//        bot->closegripper();
-//
-//
-//    }
+    bool robotino_scan_complete = false;
 
+    while(!robotino_scan_complete) {
+        std::vector<shape_detect_srvs::shape> found_objects = shapes_detector->get_shapes();
 
+        if (!found_objects.empty()) {
+            // because we expect only one shape to be detected
+            shape_detect_srvs::shape cur_item = found_objects[0];
+
+            for (auto i_missing = missing_components.begin();
+                 i_missing != missing_components.end(); /*increment in code*/) {
+                // scanned object matches a missing (required) object
+                if (i_missing->color == cur_item.colour && i_missing->shape == cur_item.shape) {
+                    // TODO: convert to 3D location, get position vector wrt cambase then convert to gripperbot base
+                    cv::Point3f pick_up_loc;
+                    // write code here
+
+                    // ask robotino to move to gripper
+                    robotino->move_to_gripperbot();
+
+                    // ready to hold
+                    bot->opengripper();
+
+                    // move close to object on robotino
+                    bot->movegripperbot(pick_up_loc.x, pick_up_loc.y, pick_up_loc.z);
+
+                    // hold the object
+                    bot->closegripper();
+
+                    // move to destination on workbench
+                    Slot move_to = workbench_slots_gripperbot[i_missing->slot];
+                    bot->movegripperbot(move_to.coord.x, move_to.coord.y, move_to.coord.z);
+
+                    // release the object
+                    bot->opengripper();
+
+                    // update the workbench
+                    Component added_comp(i_missing->shape, i_missing->color, i_missing->slot, i_missing->slot);
+                    workbench_state.push_back(added_comp);
+
+                    robotino->move_to_cambot();
+                    robotino_scan_complete = robotino->rotate();
+
+                    // remove from missing
+                    i_missing = missing_components.erase(i_missing);
+                    break;
+                }
+
+                    // if not match, go to next
+                else {
+                    ++i_missing;
+                }
+            }
+        }
+    }
 };
 
 
@@ -380,29 +409,69 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
 //    return true;
 //}
 
-cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
-//    transformation_pub.publish("start");
+//cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
+////    transformation_pub.publish("start");
+//
+//    // TODO: http://answers.ros.org/question/12045/how-to-deliver-arguments-to-a-callback-function/
+//    cv::Point3d result;
+////    transformation_server = ros_node->advertiseService("/prod_master_srvs/computed_transformation", store_trans_result);
+//
+//    while (true) {
+//        broadcast_loc(pos3D_wrt_cambot, "cambot_wrist", "TARGET_BOX_0");
+//    }
+//
+//    // TODO: remove
+//    return cv::Point3d(1.0f, 1.0f, 10.f);
+//};
 
-    // TODO: http://answers.ros.org/question/12045/how-to-deliver-arguments-to-a-callback-function/
-    cv::Point3d result;
-//    transformation_server = ros_node->advertiseService("/prod_master_srvs/computed_transformation", store_trans_result);
 
-    while (true) {
-        broadcast_loc(pos3D_wrt_cambot, "cambot_wrist", "TARGET_BOX_0");
-    }
-
-    // TODO: remove
-    return cv::Point3d(1.0f, 1.0f, 10.f);
-};
-
-
-void ProdMaster::order_components(std::vector<Component>& missing_components) {
+bool ProdMaster::order_components(std::vector<Component>& missing_components) {
     // move cambot and gripper bot to wait position for the robotino
     bot->movecambot(cambot_wait_pos.x, cambot_wait_pos.y, cambot_wait_pos.z);
     bot->movegripperbot(gripperbot_wait_pos.x, gripperbot_wait_pos.y, gripperbot_wait_pos.z);
 
-    // TODO: talk to Robotino
+    std::vector<robotino_controller::shape> shopping_list;
+    for (auto i_missing = missing_components.begin(); i_missing != missing_components.end(); ++i_missing) {
+        robotino_controller::shape cur_item;
 
+        switch (i_missing->color) {
+            // red
+            case 0:
+                cur_item.color = "red";
+                break;
+                // blue
+            case 1:
+                cur_item.color = "blue";
+                break;
+                // green
+            case 2:
+                cur_item.color = "green";
+                break;
+                // yellow
+            case 3:
+                cur_item.color = "yellow";
+                break;
+        }
+
+        switch (i_missing->shape) {
+            // square
+            case 0:
+                cur_item.shape = "quad";
+                break;
+                // circle
+            case 1:
+                cur_item.shape = "circle";
+                break;
+                // triangle
+            case 2:
+                cur_item.shape = "triangle";
+                break;
+        }
+
+        shopping_list.push_back(cur_item);
+    }
+
+    return robotino->fetch(shopping_list);
 };
 
 
@@ -414,16 +483,19 @@ int ProdMaster::produce() {
     // get state of the workbench by camera detection
     is_done = initiate_production_state(workbench_state, missing_components);
 
+    // rearranging involves moving components to their correct positions
+    rearrange_workbench(workbench_state);
+
     // until production done
     while(!is_done) {
-        // rearranging involves moving components to their correct positions
-        rearrange_workbench(workbench_state);
-
         // nothing to get so we are done
         if (missing_components.size() == 0) break;
 
         // order components - uses a (sync) service to robotino in the robotino_controller
-        order_components(missing_components);
+        bool order_success = false;
+        while (!order_success) {
+            order_success = order_components(missing_components);
+        }
 
         // fetch stuff from robotino
         receive_components(workbench_state, missing_components);
@@ -435,6 +507,9 @@ int ProdMaster::produce() {
         else {
             // here we use detection to update state again
             is_done = initiate_production_state(workbench_state, missing_components);
+
+            // rearranging involves moving components to their correct positions
+            rearrange_workbench(workbench_state);
         }
     }
 
