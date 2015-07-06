@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   gripper_control_srvs
   shape_detect_srvs
   prod_master_srvs
+  robotino_controller
 )
 
 INCLUDE(${CMAKE_ROOT}/Modules/FindQt4.cmake)
@@ -26,9 +27,9 @@ INCLUDE(${PROJECT_SOURCE_DIR}/Modules/FindEigen3.cmake)
 
 
 catkin_package(
- INCLUDE_DIRS include include/shapes_detector include/bot_controller include/prod_master
+ INCLUDE_DIRS include include/shapes_detector include/bot_controller include/robotino_controller include/prod_master
  LIBRARIES prod_master
- CATKIN_DEPENDS roscpp roslib comm_lib shape_detect_srvs prod_master_srvs
+ CATKIN_DEPENDS roscpp roslib comm_lib shape_detect_srvs prod_master_srvs robotino_controller
 #  DEPENDS system_lib
 )
 
@@ -42,6 +43,7 @@ INCLUDE_DIRECTORIES(
         include
         include/shapes_detector
         include/bot_controller
+        include/robotino_controller
         include/prod_master
         ${catkin_INCLUDE_DIRS}
         /usr/include
@@ -57,6 +59,7 @@ LINK_DIRECTORIES(
 SET(HDRS
         include/shapes_detector/shapes_detector.h
         include/bot_controller/bot_controller.h
+        include/robotino_controller/robotino_controller.h
         include/prod_master/prod_master.h
         include/main.h
 )
@@ -64,6 +67,7 @@ SET(HDRS
 SET(SRCS
         src/shapes_detector/shapes_detector.cpp
         src/bot_controller/bot_controller.cpp
+        src/robotino_controller/robotino_controller.cpp
         src/prod_master/prod_master.cpp
         src/main.cpp
 )
@@ -89,7 +93,7 @@ target_link_libraries(prod_master_node
     ${QT_QTCORE_LIBRARY}
     ${OpenCV_LIBRARIES}
 )
-add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
+add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp robotino_controller_srvs_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
 
 
 #cmake_minimum_required(VERSION 2.8.3)
