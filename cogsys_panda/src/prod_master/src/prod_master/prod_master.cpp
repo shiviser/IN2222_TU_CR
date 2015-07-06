@@ -198,7 +198,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
 
          if (!found) {
              // verbose print
-             std::cout << "Slot " << i_slot_pos->slot << " is empty!" << endl;
+             std::cout << "Slot " << i_slot_pos->slot << " is empty!" << std::endl;
 
              is_done = false;
              missing_components.push_back(Component(blueprint[i_slot_pos->slot]));
@@ -231,7 +231,10 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         workbench_state.push_back(cur_comp);
 
         // verbose print
-        std::cout << "Found a component with color: " << cur_comp.color << ", shape: " << cur_comp.shape << ", on slot: " << cur_comp << "and to be moved to: " << cur_comp << std::endl;
+//        std::cout << "Found a component with color: " << cur_comp.color;
+//        std::cout << ", shape: " << cur_comp.shape;
+//        std::cout << ", on slot: " << cur_comp;
+//        std::cout << "and to be moved to: " << cur_comp << std::endl;
     }
 
     // printing workbench
