@@ -225,6 +225,12 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         workbench_state.push_back(cur_comp);
     }
 
+    // printing workbench
+    std::cout << "The initiated workbench is: " << std::endl;
+    for (auto i_workbench = workbench_state.begin(); i_workbench != workbench_state.end(); ++i_workbench) {
+        std::cout << "color: " << i_workbench->color << ", shape: " << i_workbench->shape << ", slot: " << i_workbench->slot << ", move_to: " << i_workbench->move_to << std::endl;
+    }
+
     // cleanup and return
     delete [] occupied;
     return is_done;
@@ -316,11 +322,18 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     std::vector<int> to_move;
 
     for (int i_comp = 0; i_comp < workbench_state.size(); ++i_comp) {
+//        std::cout << (int)workbench_state[i_comp].color << std::end;
+//        std::cout << (int)workbench_state[i_comp].shape << std::end;
+
         // it is in the position where it has to be
-        if (workbench_state[i_comp].slot == workbench_state[i_comp].move_to) continue;
+        if (workbench_state[i_comp].slot == workbench_state[i_comp].move_to) {
+            std::cout << "object in its place" << std::endl;
+            continue;
+        }
 
         // component to be removed
-        if (workbench_state[i_comp].move_to == Component::REMOVE) {
+        else if (workbench_state[i_comp].move_to == Component::REMOVE) {
+            std::cout << "object to remove" << std::endl;
             to_move.push_back(i_comp);
             continue;
         }
@@ -423,7 +436,7 @@ float k = 0.395/560.0;
 		
 	float x = (img_point_x-240)*k*-1.f + xo;
 	float y = (img_point_y-320)*k + yo;
-	float z = ;
+	float z = 0.23;
 
     return cv::Point3f(x, y, z);
 }
@@ -498,6 +511,12 @@ int ProdMaster::produce() {
     bool is_done = false;
     std::vector<Component> workbench_state;
     std::vector<Component> missing_components;
+
+    // printing blueprint
+    std::cout << "The blueprint is: " << std::endl;
+    for (auto i_blueprint = blueprint.begin(); i_blueprint != blueprint.end(); ++i_blueprint) {
+        std::cout << "color: " << i_blueprint->color << ", shape: " << i_blueprint->shape << ", slot: " << i_blueprint->slot << std::endl;
+    }
 
     // get state of the workbench by camera detection
     is_done = initiate_production_state(workbench_state, missing_components);

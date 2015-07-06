@@ -26,7 +26,7 @@ public:
     bool get_center_shape(shape_detect_srvs::shape& found_shape);
 
     //
-    std::vector<shape_detect_srvs::shape> get_shapes(int thres=0);
+    std::vector<shape_detect_srvs::shape> get_shapes(int thres=50);
 
     // destructor
     ~ShapesDetector();

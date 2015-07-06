@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 //        //namedWindow("cont", 1);
 //
 //        cv::Mat img;
-//        int getImgFlag = 23;
+        int getImgFlag = 23;
 //        cv::namedWindow("video", 1);
 //        int k;
 //
