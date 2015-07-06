@@ -1,4 +1,5 @@
 #include "detector_classes/HSV_Param.h"
+#include "detector_classes/shapes_detector.h"
 #include "main.h"
 
 HSV_Param::HSV_Param(void)
