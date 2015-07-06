@@ -65,7 +65,7 @@ bool ShapesDetector::find_shapes(int thres, bool debug, vector<HSV_Param> HSV_Ty
 }
 
 bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
-
+	cv::Mat threshold;
 	int xPos,yPos;
 	int x_min_box = thres;
 	int x_max_box = FRAME_WIDTH-thres;
@@ -85,19 +85,35 @@ bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
 		y_max_box = CENTER_BOX_Y_MAX;	
 	}
 
-	cv::inRange(HSV_img,Filt_Type.getHSVmin(),Filt_Type.getHSVmax(),HSV_img);
-	morphOps(HSV_img);
+	cv::inRange(HSV_img,Filt_Type.getHSVmin(),Filt_Type.getHSVmax(),threshold);
+
+	if(Filt_Type.getColour() == red) {
+		cv::Mat temp;
+		cv::Scalar HSV_min = Filt_Type.getHSVmin();
+		cv::Scalar HSV_max = Filt_Type.getHSVmax();
+
+		HSV_min.val[0] = RED_H_MIN_2;
+		HSV_max.val[0] = RED_H_MAX_2;
+		
+		cv::inRange(HSV_img,HSV_min,HSV_max,temp);
+		bitwise_or(threshold, temp, threshold);
+		
+		//cv::imshow("red threshold",threshold);
+		//waitKey(50);
+	}
+
+	morphOps(threshold);
 
 	//these two vectors needed for output of findContours
 	vector< vector<Point> > contours;
-	Mat approx;
-	Mat edges_map;
+	cv::Mat approx;
+	cv::Mat edges_map;
 	vector<Vec4i> hierarchy;
 	vector<Vec3f> circles;
 	//find contours of filtered image using openCV findContours function
-	cv::findContours(HSV_img,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
-	cv::Canny(HSV_img, edges_map, 5, 250, 7, true);
-	cv::HoughCircles(edges_map, circles, CV_HOUGH_GRADIENT, 1, 100, 180, 30 ,20, 210);
+	cv::findContours(threshold,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	//cv::Canny(threshold, edges_map, 5, 250, 7, true);
+	//cv::HoughCircles(edges_map, circles, CV_HOUGH_GRADIENT, 1, 100, 180, 30 ,20, 210);
 	
 	//use moments method to find the position
 	double refArea = 0;
@@ -132,9 +148,11 @@ bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
 						tempShape.setShape(triangle_sh);
 					} else if(corners == 4) {
 						tempShape.setShape(square_sh);
+					} else if(corners > 5) {
+						tempShape.setShape(circle_sh);
 					}
 			
-					if(corners == 3 || corners == 4) {
+					if(corners >= 3) {
 						tempShapes.push_back(tempShape);
 					}
 
@@ -146,7 +164,7 @@ bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
 		}
 	}
 	
-	//ROS_INFO("Circles Detected: %d",circles.size());
+	/*//ROS_INFO("Circles Detected: %d",circles.size());
 	
 	for( size_t i = 0; i < circles.size(); i++ ) {
 		tempShape.setXPos(cvRound(circles[i][0]));
@@ -157,7 +175,7 @@ bool ShapesDetector::scan_colour(Mat HSV_img,HSV_Param Filt_Type, int thres) {
 		tempShape.setShape(circle_sh);
 
 		tempShapes.push_back(tempShape);
-	}
+	}*/
 	
 	for( size_t i = 0; i < tempShapes.size(); i++ ) {
 		int xPos = tempShapes[i].getXPos();
@@ -205,7 +223,7 @@ void ShapesDetector::display_shapes(int thres) {
 			case square_sh: shape="Square"; break;
 			case circle_sh:
 				shape="Circle";
-				circle( img_info, cv::Point(Shapes.at(i).getXPos(),Shapes.at(i).getYPos()), Shapes.at(i).getRadius(), Scalar(255,255,255), 3, 5, 0 );
+				//circle( img_info, cv::Point(Shapes.at(i).getXPos(),Shapes.at(i).getYPos()), Shapes.at(i).getRadius(), Scalar(255,255,255), 3, 5, 0 );
 				break;
 			case triangle_sh: shape="Triangle"; break;
 			default: break;

@@ -4,8 +4,8 @@
 using namespace std;
 using namespace cv;
 
-typedef enum {red,blue,green,yellow} colour_t;
-typedef enum {square_sh,circle_sh,triangle_sh} shape_t;
+typedef enum {red=0,blue,green,yellow} colour_t;
+typedef enum {square_sh=0,circle_sh,triangle_sh} shape_t;
 
 class Shape
 {
