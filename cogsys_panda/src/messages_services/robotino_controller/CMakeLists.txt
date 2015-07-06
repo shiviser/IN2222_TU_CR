@@ -53,7 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-#  Fetch.srv
+  GetObjects.srv
   Rotate.srv
   MoveToCam.srv
   MoveToGripper.srv
