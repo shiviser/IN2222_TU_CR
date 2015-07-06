@@ -191,7 +191,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         bot->movecambot(i_slot_pos->coord.x, i_slot_pos->coord.y, i_slot_pos->coord.z);
 
         // because the camera service is very slow
-        sleep(0.5);
+        sleep(1);
 
         shape_detect_srvs::shape found_object;
         bool found = shapes_detector->get_center_shape(found_object); //if {-1;-1}, there is no object
