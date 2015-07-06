@@ -190,10 +190,16 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
     for (auto i_slot_pos = workbench_slots_cambot.begin(); i_slot_pos != workbench_slots_cambot.end(); ++i_slot_pos) {
         bot->movecambot(i_slot_pos->coord.x, i_slot_pos->coord.y, i_slot_pos->coord.z);
 
+        // because the camera service is very slow
+        sleep(0.5);
+
         shape_detect_srvs::shape found_object;
         bool found = shapes_detector->get_center_shape(found_object); //if {-1;-1}, there is no object
 
          if (!found) {
+             // verbose print
+             std::cout << "Slot " << i_slot_pos->slot << " is empty!" << endl;
+
              is_done = false;
              missing_components.push_back(Component(blueprint[i_slot_pos->slot]));
              continue;
@@ -223,6 +229,9 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
 
         // update state
         workbench_state.push_back(cur_comp);
+
+        // verbose print
+        std::cout << "Found a component with color: " << cur_comp.color << ", shape: " << cur_comp.shape << ", on slot: " << cur_comp << "and to be moved to: " << cur_comp << std::endl;
     }
 
     // printing workbench
