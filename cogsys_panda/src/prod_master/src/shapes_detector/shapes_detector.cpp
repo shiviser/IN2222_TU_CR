@@ -6,13 +6,14 @@ ShapesDetector::ShapesDetector(ros::NodeHandle *n) {
 };
 
 
-bool ShapesDetector::get_center_shape(Shape& found_shape) {
-	std::vector<Shape> shapes = get_shapes(-1);
+bool ShapesDetector::get_center_shape(shape_detect_srvs::shape& found_shape) {
+	std::vector<shape_detect_srvs::shape> shapes = get_shapes(-1);
 
 	if (shapes.empty()) return false;
 
 	found_shape = shapes[0];
 	return true;
+
 //	shape_detect_srv.request.filter = -1;
 //
 //	if (shape_detector_client.call(shape_detect_srv)) {
@@ -38,23 +39,25 @@ bool ShapesDetector::get_center_shape(Shape& found_shape) {
 }
 
 
-std::vector<Shape> ShapesDetector::get_shapes(int thres) {
+std::vector<shape_detect_srvs::shape> ShapesDetector::get_shapes(int thres) {
 	shape_detect_srv.request.filter = thres;
 
 	if (shape_detector_client.call(shape_detect_srv)) {
-		std::vector<Shape> shapes;
+//		std::vector<Shape> shapes;
+//
+//		for (auto it = shape_detect_srv.response.shapes.begin(); it != shape_detect_srv.response.shapes.end(); ++it) {
+//			Shape cur_shape;
+//			cur_shape.xPos = it->xPos;
+//			cur_shape.yPos = it->yPos;
+//			cur_shape.colour = it->colour;
+//			cur_shape.shape = it->shape;
+//
+//			shapes.push_back(cur_shape);
+//		}
 
-		for (auto it = shape_detect_srv.response.shapes.begin(); it != shape_detect_srv.response.shapes.end(); ++it) {
-			Shape cur_shape;
-			cur_shape.xPos = it->xPos;
-			cur_shape.yPos = it->yPos;
-			cur_shape.colour = it->colour;
-			cur_shape.shape = it->shape;
+		return shape_detect_srv.response.shapes;
 
-			shapes.push_back(cur_shape);
-		}
-
-		return shapes;
+//		return shapes;
     	}
    	else {
         	ROS_ERROR("Failed to call service /shape_detector/shapes");

@@ -5,12 +5,12 @@
 #include <shape_detect_srvs/shape.h>
 
 
-struct Shape {
-    int xPos;
-    int yPos;
-    std::string colour;
-    std::string shape;
-};
+//struct Shape {
+//    int xPos;
+//    int yPos;
+//    int colour;
+//    int shape;
+//};
 
 
 class ShapesDetector {
@@ -23,10 +23,10 @@ public:
     ShapesDetector(ros::NodeHandle *n);
 
     //
-    bool get_center_shape(Shape& found_shape);
+    bool get_center_shape(shape_detect_srvs::shape& found_shape);
 
     //
-    std::vector<Shape> get_shapes(int thres);
+    std::vector<shape_detect_srvs::shape> get_shapes(int thres=0);
 
     // destructor
     ~ShapesDetector();

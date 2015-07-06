@@ -1,108 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(prod_master)
-
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
+project(robotino_controller)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  roslib
-  camera_srvs
-  comm_lib
-  tf
-  perception_msgs
-  perception_srvs
-  robot_control_srvs
-  gripper_control_srvs
-  shape_detect_srvs
-  prod_master_srvs
-  robotino_controller
+  rospy
+  std_msgs
+  message_generation
 )
-
-INCLUDE(${CMAKE_ROOT}/Modules/FindQt4.cmake)
-FIND_PACKAGE(OpenCV REQUIRED )
-INCLUDE(${PROJECT_SOURCE_DIR}/Modules/FindEigen3.cmake)
-
-
-catkin_package(
- INCLUDE_DIRS include include/shapes_detector include/bot_controller include/robotino_controller include/prod_master
- LIBRARIES prod_master
- CATKIN_DEPENDS roscpp roslib comm_lib shape_detect_srvs prod_master_srvs robotino_controller
-#  DEPENDS system_lib
-)
-
-
-INCLUDE_DIRECTORIES(
-        ${QT_INCLUDES}
-        ${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/src
-        ${OPENCV_INCLUDES}
-        ${EIGEN3_INCLUDE_DIR}
-        include
-        include/shapes_detector
-        include/bot_controller
-        include/robotino_controller
-        include/prod_master
-        ${catkin_INCLUDE_DIRS}
-        /usr/include
-        /usr/local/include
-)
-
-LINK_DIRECTORIES(
-        /usr/local/lib
-        /usr/lib
-)
-
-
-SET(HDRS
-        include/shapes_detector/shapes_detector.h
-        include/bot_controller/bot_controller.h
-        include/robotino_controller/robotino_controller.h
-        include/prod_master/prod_master.h
-        include/main.h
-)
-
-SET(SRCS
-        src/shapes_detector/shapes_detector.cpp
-        src/bot_controller/bot_controller.cpp
-        src/robotino_controller/robotino_controller.cpp
-        src/prod_master/prod_master.cpp
-        src/main.cpp
-)
-
-## Declare a cpp library
-# TODO - add the object detector too but there's some opencv problem
-# maybe this will solve the problem:
-add_library(prod_master
-        include/bot_controller/bot_controller.h
-#        include/shapes_detector/shapes_detector.h
-        src/bot_controller/bot_controller.cpp
-#        src/shapes_detector/shapes_detector.cpp
-)
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-add_executable(prod_master_node ${HDRS} ${SRCS})
-target_link_libraries(prod_master_node
-    ${catkin_LIBRARIES}
-    ${QT_QTCORE_LIBRARY}
-    ${OpenCV_LIBRARIES}
-)
-add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp robotino_controller_generate_messages_cpp prod_master_srvs_generate_messages_cpp)
-
-
-#cmake_minimum_required(VERSION 2.8.3)
-#project(prod_master)
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-#find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -138,18 +45,19 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   shape.msg
+ )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  GetObjects.srv
+  Rotate.srv
+  MoveToCam.srv
+  MoveToGripper.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -159,10 +67,10 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -173,12 +81,12 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
+catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES prod_master
-#  CATKIN_DEPENDS other_catkin_pkg
+#  LIBRARIES robot_control_srvs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 #  DEPENDS system_lib
-#)
+)
 
 ###########
 ## Build ##
@@ -187,21 +95,24 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a cpp library
-# add_library(prod_master
-#   src/${PROJECT_NAME}/prod_master.cpp
+# add_library(robot_control_srvs
+#   src/${PROJECT_NAME}/robot_control_srvs.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(prod_master_node src/prod_master_node.cpp)
+# add_executable(robot_control_srvs_node src/robot_control_srvs_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(prod_master_node prod_master_generate_messages_cpp)
+# add_dependencies(robot_control_srvs_node robot_control_srvs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(prod_master_node
+# target_link_libraries(robot_control_srvs_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -220,7 +131,7 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS prod_master prod_master_node
+# install(TARGETS robot_control_srvs robot_control_srvs_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -245,7 +156,7 @@ add_dependencies(prod_master_node shape_detect_srvs_generate_messages_cpp roboti
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_prod_master.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_robot_control_srvs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
