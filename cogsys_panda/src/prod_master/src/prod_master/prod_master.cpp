@@ -415,8 +415,17 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
 //}
 
 cv::Point3f ProdMaster::get_position_wrt_gripper(int img_point_x, int img_point_y) {
-    // TODO
-    return cv::Point3f(0, 0, 0);
+    
+float k = 0.395/560.0;
+
+	float xo=0.0; float yo=0.37;
+		
+		
+	float x = (img_point_x-240)*k*-1.f + xo;
+	float y = (img_point_y-320)*k + yo;
+	float z = ;
+
+    return cv::Point3f(x, y, z);
 }
 
 //cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
