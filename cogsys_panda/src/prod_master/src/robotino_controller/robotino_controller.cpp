@@ -25,7 +25,7 @@ bool RobotinoController::fetch(std::vector<robotino_controller::shape> objects) 
         }
     }
     else {
-        ROS_ERROR("Failed to call service /robotino_control/fetch");
+        ROS_ERROR("Failed to call service /robotino/getObjects");
         throw;
     }
 };
@@ -48,7 +48,7 @@ int RobotinoController::rotate() {
         }
     }
     else {
-        ROS_ERROR("Failed to call service /robotino_control/rotate");
+        ROS_ERROR("Failed to call service /robotino/rotate");
         throw;
     }
 };
@@ -68,7 +68,7 @@ bool RobotinoController::move_to_cambot() {
 		}
     	}
    	else {
-        	ROS_ERROR("Failed to call service /robotino_control/move_to_cambot");
+        	ROS_ERROR("Failed to call service /robotino/moveToCamera");
         	throw;
     	}
 };
@@ -87,7 +87,7 @@ bool RobotinoController::move_to_gripperbot() {
 		}
     	}
    	else {
-        	ROS_ERROR("Failed to call service /robotino_control/move_to_gripperbot");
+        	ROS_ERROR("Failed to call service /robotino/moveToGripper");
         	throw;
     	}
 };

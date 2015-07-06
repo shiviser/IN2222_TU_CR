@@ -290,7 +290,7 @@ void ProdMaster::execute_move_components(std::vector<int>& to_move, std::vector<
         bot->opengripper();
 
         // current piece
-        auto cur_piece = workbench_state.begin() + i_comp;
+        auto cur_piece = workbench_state.begin() + to_move[i_comp];
 
         // move to piece
         Slot piece_slot = workbench_slots_gripperbot[cur_piece->slot];
