@@ -114,10 +114,10 @@ int main(int argc, char **argv) {
         closegripper_client = n.serviceClient<gripper_control_srvs::CloseGripper>("/gripper_control/close_gripper"); */
 
         ProdMaster prod_master(&n);
-        BotController bot(&n);
-        ShapesDetector shapes_detector(&n);
+//        BotController bot(&n);
+//        ShapesDetector shapes_detector(&n);
 
-        tf::TransformListener listener;
+//        tf::TransformListener listener;
 //        DetectorThread detector;
 //        detector.start();
 
@@ -127,13 +127,13 @@ int main(int argc, char **argv) {
 //        //namedWindow("seg", 1);
 //        //namedWindow("cont", 1);
 //
-        cv::Mat img;
-        int getImgFlag = 23;
-        cv::namedWindow("video", 1);
-        int k;
-
-        comminterface::ImageSubscriber imgSub("/camera/image");
-        imgSub.start();
+//        cv::Mat img;
+//        int getImgFlag = 23;
+//        cv::namedWindow("video", 1);
+//        int k;
+//
+//        comminterface::ImageSubscriber imgSub("/camera/image");
+//        imgSub.start();
 
 ////        detector.getDetectorPtr()->setColourSegDebug(true);
 //
@@ -148,173 +148,175 @@ int main(int argc, char **argv) {
 
             std::cout << "Main loop" << std::endl;
 
-//            std::cin >> getImgFlag;
+            std::cin >> getImgFlag;
 
-            if (getImgFlag == 23) {
+            prod_master.produce();
 
-                //"UI" maybe too simple ;)
-                unsigned int wantedShape = 1;
-                unsigned int wantedColour = 2;
-                std::cout << "Please enter the number corresponding to the type of shape!" << std::endl <<
-                "1 (circle), 3 (triangle), 4 (square)" << std::endl;
-                std::cin >> wantedShape;
-                std::cout << "Please enter the number corresponding to the colour" << std::endl <<
-                "0 (blue), 1 (green), 2 (red), 3 (yellow)" << std::endl;
-                std::cin >> wantedColour;
-
-                bool found = false;
-                cv::Point position;
-                cv::Point3d position3D;
-
-                //move Gripperbot to position that doesn't collide with Cambot
-                //get gripperbot pose
-//		float x_gp, y_gp, z_gp;
-//		bot.getgripperbotpose(x_gp, y_gp, z_yp);
-//		//e.g. just move gripperbot back
-//		int limit = 0.15; //maybe different value
-//		if(x_gp > limit) bot.movegripperbot(0.15, y_gp, z_gp) //that position is hopefully possible ;)
-//		bool moving = true;
-//		while(moving) {
-//			float x_p, y_p, z_p;
-//			float eps = 0.02; //to tolerate some error
-//			bot.getgripperbotpose(x_p, y_p, z_p);
-//			if(((x_gp - eps) < x_p < (x_gp+eps)) && ((y_gp - eps) < y_p < (y_gp+eps)) && ((z_gp - eps) < z_p < (z_gp+eps)))
-//				moving = false;
-//			//wait for some time?
-//		}
-                // bot bots to home
-                bot.movetohome(false, true);
-
-                //Position 1
-                float x1 = 0.23;
-                float y1 = -0.1;
-                float z1 = 0.43;
-                bot.movecambot(x1, y1, z1);
-//		bool moving = true;
-//		while(moving) {
-//			float x_p, y_p, z_p;
-//			float eps = 0.02; //to tolerate some error
-//			bot.getcambotpose(x_p, y_p, z_p);
-//			if(((x1 - eps) < x_p < (x1+eps)) && ((y1 - eps) < y_p < (y1+eps)) && ((z1 - eps) < z_p < (z1+eps))) moving = false;
-//			//wait for some time?
-//		}
-
-                //get Shapes + Colours
-                // TODO
-                sleep(1);
-                bool img_udpated = false;
-                while(!img_udpated)
-                    img_udpated = imgSub.getImageData(img);
-//                cv::imshow("video", img);
-//                cv::waitKey(0);
-                std::vector<cv::Point> positions1;
-                std::vector<cv::Point3d> positions3D1;
-                std::vector<unsigned int> colours1;
-                std::vector<unsigned int> shape_types1;
-             //   shapes_detector.get_all_shapes(positions1, positions3D1, colours1, shape_types1, false);
-
-                std::cout << shape_types1.size() << std::cout;
-
-                //compare shapes with user input
-                for (size_t i = 0; i < positions1.size(); i++) {
-                    if (colours1[i] == wantedColour && shape_types1[i] == wantedShape) {
-                        position = positions1[i];
-                        position3D = positions3D1[i];
-                        found = true;
-                    }
-                }
+//            if (getImgFlag == 23) {
+//
+//                //"UI" maybe too simple ;)
+//                unsigned int wantedShape = 1;
+//                unsigned int wantedColour = 2;
+//                std::cout << "Please enter the number corresponding to the type of shape!" << std::endl <<
+//                "1 (circle), 3 (triangle), 4 (square)" << std::endl;
+//                std::cin >> wantedShape;
+//                std::cout << "Please enter the number corresponding to the colour" << std::endl <<
+//                "0 (blue), 1 (green), 2 (red), 3 (yellow)" << std::endl;
+//                std::cin >> wantedColour;
+//
+//                bool found = false;
+//                cv::Point position;
+//                cv::Point3d position3D;
+//
+//                //move Gripperbot to position that doesn't collide with Cambot
+//                //get gripperbot pose
+////		float x_gp, y_gp, z_gp;
+////		bot.getgripperbotpose(x_gp, y_gp, z_yp);
+////		//e.g. just move gripperbot back
+////		int limit = 0.15; //maybe different value
+////		if(x_gp > limit) bot.movegripperbot(0.15, y_gp, z_gp) //that position is hopefully possible ;)
+////		bool moving = true;
+////		while(moving) {
+////			float x_p, y_p, z_p;
+////			float eps = 0.02; //to tolerate some error
+////			bot.getgripperbotpose(x_p, y_p, z_p);
+////			if(((x_gp - eps) < x_p < (x_gp+eps)) && ((y_gp - eps) < y_p < (y_gp+eps)) && ((z_gp - eps) < z_p < (z_gp+eps)))
+////				moving = false;
+////			//wait for some time?
+////		}
+//                // bot bots to home
+//                bot.movetohome(false, true);
+//
+//                //Position 1
+//                float x1 = 0.23;
+//                float y1 = -0.1;
+//                float z1 = 0.43;
+//                bot.movecambot(x1, y1, z1);
+////		bool moving = true;
+////		while(moving) {
+////			float x_p, y_p, z_p;
+////			float eps = 0.02; //to tolerate some error
+////			bot.getcambotpose(x_p, y_p, z_p);
+////			if(((x1 - eps) < x_p < (x1+eps)) && ((y1 - eps) < y_p < (y1+eps)) && ((z1 - eps) < z_p < (z1+eps))) moving = false;
+////			//wait for some time?
+////		}
+//
+//                //get Shapes + Colours
+//                // TODO
+//                sleep(1);
+//                bool img_udpated = false;
+//                while(!img_udpated)
+//                    img_udpated = imgSub.getImageData(img);
+////                cv::imshow("video", img);
+////                cv::waitKey(0);
+//                std::vector<cv::Point> positions1;
+//                std::vector<cv::Point3d> positions3D1;
+//                std::vector<unsigned int> colours1;
+//                std::vector<unsigned int> shape_types1;
+//             //   shapes_detector.get_all_shapes(positions1, positions3D1, colours1, shape_types1, false);
+//
+//                std::cout << shape_types1.size() << std::cout;
+//
+//                //compare shapes with user input
+//                for (size_t i = 0; i < positions1.size(); i++) {
+//                    if (colours1[i] == wantedColour && shape_types1[i] == wantedShape) {
+//                        position = positions1[i];
+//                        position3D = positions3D1[i];
+//                        found = true;
+//                    }
+//                }
+////                if (found) {
+////                    std::cout << "object found in image1 at: " << position << std::endl;
+////
+////                    //TODO get 3D coordinates + move cambot to secure position + move gripperbot to shape
+////                }
+//                if (!found) {
+//                    //Position 2
+//                    float x2 = 0.23;
+//                    float y2 = 0.09;
+//                    float z2 = 0.43;
+//                    bot.movecambot(x2, y2, z2);
+////                    moving = true;
+////                    while (moving) {
+////                        float x_p, y_p, z_p;
+////                        float eps = 0.01; //to tolerate some error
+////                        bot.getcambotpose(x_p, y_p, z_p);
+////                        if (((x2 - eps) < x_p < (x2 + eps)) && ((y2 - eps) < y_p < (y2 + eps)) &&
+////                            ((z2 - eps) < z_p < (z2 + eps)))
+////                            moving = false;
+////                        //wait for some time?
+////                    }
+//
+//                    //get shapes
+//                    // TODO
+//                    sleep(1);
+//                    img_udpated = false;
+//                    while(!img_udpated)
+//                        img_udpated = imgSub.getImageData(img);
+////                    cv::imshow("video", img);
+////                    cv::waitKey(0);
+//                    std::vector<cv::Point> positions2;
+//                    std::vector<cv::Point3d> positions3D2;
+//                    std::vector<unsigned int> colours2;
+//                    std::vector<unsigned int> shape_types2;
+//                   // shapes_detector.get_all_shapes(positions2, positions3D2, colours2, shape_types2, false);
+//
+//                    std::cout << shape_types2.size() << std::cout;
+//
+//                    //compare shapes with user input
+//                    for (size_t i = 0; i < positions1.size(); i++) {
+//                        if (colours2[i] == wantedColour && shape_types2[i] == wantedShape) {
+//                            position = positions2[i];
+//                            position3D = positions3D2[i];
+//                            found = true;
+//                        }
+//                    }
+//                }
+//
 //                if (found) {
-//                    std::cout << "object found in image1 at: " << position << std::endl;
+//                    std::cout << "object found in image2 at: " << position << "3D: " << position3D << std::endl;
+//
+//
+////                    tf::StampedTransform stamped_transform;
+//                        /*
+//                      get the pose of the object w.r.t gripperbot_base frame
+//                    */
+////                        listener.waitForTransform("target", "gripperbot_base",
+////
+////                            ros::Time(0), ros::Duration(1.0));
+//
+//                    broadcast_loc_wrt_cambot(position3D);
+//
+////                    listener.lookupTransform("target", "gripperbot_base",
+////                                                 ros::Time(0), stamped_transform);
+////                        float x = 4,y = 4,z = 4;
+////                    std::cin >> x;
+////                    std::cin >> y;
+////                    std::cin >> z;
+////                        x = stamped_transform.getOrigin().getX();
+////                        y = stamped_transform.getOrigin().getY();
+////                        z = stamped_transform.getOrigin().getZ();
+////                        if(z < 0) z = -z;
+////                        if(x < 0) continue;
+////                        x -= 0.15;
+//                        /*
+//                            move the gripperbot using the obtained object position
+//                        */
+////                        bot.movegripperbot(x, y, z);
+//
 //
 //                    //TODO get 3D coordinates + move cambot to secure position + move gripperbot to shape
-//                }
-                if (!found) {
-                    //Position 2
-                    float x2 = 0.23;
-                    float y2 = 0.09;
-                    float z2 = 0.43;
-                    bot.movecambot(x2, y2, z2);
-//                    moving = true;
-//                    while (moving) {
-//                        float x_p, y_p, z_p;
-//                        float eps = 0.01; //to tolerate some error
-//                        bot.getcambotpose(x_p, y_p, z_p);
-//                        if (((x2 - eps) < x_p < (x2 + eps)) && ((y2 - eps) < y_p < (y2 + eps)) &&
-//                            ((z2 - eps) < z_p < (z2 + eps)))
-//                            moving = false;
-//                        //wait for some time?
-//                    }
-
-                    //get shapes
-                    // TODO
-                    sleep(1);
-                    img_udpated = false;
-                    while(!img_udpated)
-                        img_udpated = imgSub.getImageData(img);
-//                    cv::imshow("video", img);
-//                    cv::waitKey(0);
-                    std::vector<cv::Point> positions2;
-                    std::vector<cv::Point3d> positions3D2;
-                    std::vector<unsigned int> colours2;
-                    std::vector<unsigned int> shape_types2;
-                   // shapes_detector.get_all_shapes(positions2, positions3D2, colours2, shape_types2, false);
-
-                    std::cout << shape_types2.size() << std::cout;
-
-                    //compare shapes with user input
-                    for (size_t i = 0; i < positions1.size(); i++) {
-                        if (colours2[i] == wantedColour && shape_types2[i] == wantedShape) {
-                            position = positions2[i];
-                            position3D = positions3D2[i];
-                            found = true;
-                        }
-                    }
-                }
-
-                if (found) {
-                    std::cout << "object found in image2 at: " << position << "3D: " << position3D << std::endl;
-
-
-//                    tf::StampedTransform stamped_transform;
-                        /*
-                      get the pose of the object w.r.t gripperbot_base frame
-                    */
-//                        listener.waitForTransform("target", "gripperbot_base",
 //
-//                            ros::Time(0), ros::Duration(1.0));
-
-                    broadcast_loc_wrt_cambot(position3D);
-
-//                    listener.lookupTransform("target", "gripperbot_base",
-//                                                 ros::Time(0), stamped_transform);
-//                        float x = 4,y = 4,z = 4;
-//                    std::cin >> x;
-//                    std::cin >> y;
-//                    std::cin >> z;
-//                        x = stamped_transform.getOrigin().getX();
-//                        y = stamped_transform.getOrigin().getY();
-//                        z = stamped_transform.getOrigin().getZ();
-//                        if(z < 0) z = -z;
-//                        if(x < 0) continue;
-//                        x -= 0.15;
-                        /*
-                            move the gripperbot using the obtained object position
-                        */
-//                        bot.movegripperbot(x, y, z);
-
-
-                    //TODO get 3D coordinates + move cambot to secure position + move gripperbot to shape
-
-                }
-                else {
-                    std::cout << "the object couldn't be found " << std::endl;
-                }
-            }
-
-            k = cv::waitKey(100);
-
-            if ((int) (k & 0xFF) == 27)
-                break;
+//                }
+//                else {
+//                    std::cout << "the object couldn't be found " << std::endl;
+//                }
+//            }
+//
+//            k = cv::waitKey(100);
+//
+//            if ((int) (k & 0xFF) == 27)
+//                break;
 
         }
 

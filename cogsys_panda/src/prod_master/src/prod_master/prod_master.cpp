@@ -10,6 +10,12 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
 
     // TODO: parse file for production
     // load_production("/config_data/production.ini");
+    Component first(0, 0, 0);
+    blueprint.push_back(first);
+    Component second(1, 1, 1);
+    blueprint.push_back(second);
+    Component third(2, 2, 2);
+    blueprint.push_back(third);
 
     bot = new BotController(n);
     robotino = new RobotinoController(n);
