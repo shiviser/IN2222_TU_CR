@@ -1,36 +1,38 @@
 #include "robotino_controller.h"
 
 RobotinoController::RobotinoController(ros::NodeHandle *n) {
-        // bot clients
-//        fetch_client = n->serviceClient<robotino_controller::Fetch>("/robotino_controller_node/fetch");
+	// bot clients
+	fetch_client = n->serviceClient<robotino_controller::GetObjects>("/robotino/getObjects");
 
-	rotate_client = n->serviceClient<robotino_controller::Rotate>("/robotino_controller_node/rotate");
+	rotate_client = n->serviceClient<robotino_controller::Rotate>("/robotino/rotate");
 
-	moveToCam_client = n->serviceClient<robotino_controller::MoveToCambot>("/robotino_controller_node/move_to_cambot");
+	moveToCam_client = n->serviceClient<robotino_controller::MoveToCam>("/robotino/moveToCamera");
 
-	moveToGripper_client = n->serviceClient<robotino_controller::MoveToGripper>("/robotino_controller_node/move_to_gripper");
+	moveToGripper_client = n->serviceClient<robotino_controller::MoveToGripper>("/robotino/moveToGripper");
 }
 
-//bool RobotinoController::fetch(std::vector<std::vector<int>> objects) {
-//    fetch_srv.request.objects = objects;
-//
-//    if (fetch_client.call(fetch_srv)) {
-//        if (fetch_srv.response.success) {
-//            std::cout << "Fetching successful" << std::endl;
-//            return true;
-//        }
-//        else {
-//            std::cout << "Fetching objects failed" << std::endl;
-//            return false;
-//        }
-//    }
-//    else {
-//        ROS_ERROR("Failed to call service /robotino_control/fetch");
-//        throw;
-//    }
-//};
+bool RobotinoController::fetch(std::vector<robotino_controller::shape> objects) {
+    fetch_srv.request.shoppingList = objects;
+
+    if (fetch_client.call(fetch_srv)) {
+        if (fetch_srv.response.success) {
+            std::cout << "Fetching successful" << std::endl;
+            return true;
+        }
+        else {
+            std::cout << "Fetching objects failed" << std::endl;
+            return false;
+        }
+    }
+    else {
+        ROS_ERROR("Failed to call service /robotino_control/fetch");
+        throw;
+    }
+};
 
 int RobotinoController::rotate() {
+//	rotate_srv.request.slots = 0;
+
     if (rotate_client.call(rotate_srv)) {
         if (rotate_srv.response.success == 0) {
             std::cout << "Rotation successful" << std::endl;
@@ -53,6 +55,8 @@ int RobotinoController::rotate() {
 
 
 bool RobotinoController::move_to_cambot() {
+//	moveToCam_srv.request.dummy = 0;
+
 	if (moveToCam_client.call(moveToCam_srv)) {
 		if (moveToCam_srv.response.success) {
 		    std::cout << "Moved to Cambot" << std::endl;
@@ -70,6 +74,8 @@ bool RobotinoController::move_to_cambot() {
 };
 
 bool RobotinoController::move_to_gripperbot() {
+//	moveToGripper_srv.request.dummy = 0;
+
 	if (moveToGripper_client.call(moveToGripper_srv)) {
 		if (moveToGripper_srv.response.success) {
 		    std::cout << "Moved to Gripperbot" << std::endl;

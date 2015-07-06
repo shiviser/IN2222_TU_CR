@@ -1,15 +1,17 @@
 #include <ros/ros.h>
-//#include <robotino_controller/Fetch.h>
+#include <robotino_controller/GetObjects.h>
 #include <robotino_controller/Rotate.h>
 #include <robotino_controller/MoveToCam.h>
 #include <robotino_controller/MoveToGripper.h>
+#include <robotino_controller/shape.h>
+
 
 class RobotinoController {
 private:
 
 	//for fetching:
-//   	 ros::ServiceClient fetch_client;
-//   	 robotino_controller::Fetch fetch_srv;
+   	 ros::ServiceClient fetch_client;
+   	 robotino_controller::GetObjects fetch_srv;
 
 	//for rotating:
 	ros::ServiceClient rotate_client;
@@ -27,7 +29,7 @@ private:
 public:
 	RobotinoController(ros::NodeHandle *n);
 
-//	bool fetch(std::vector<std::vector<int>> objects); //TODO: shape/colour as number or string?
+	bool fetch(std::vector<robotino_controller::shape> objects); //TODO: shape/colour as number or string?
 
 	int rotate();
 
@@ -36,5 +38,5 @@ public:
 	bool move_to_gripperbot();
 
 	
-}
+};
 
