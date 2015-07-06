@@ -54,7 +54,7 @@
 #define BLUE_V_MIN		64
 #define BLUE_V_MAX		255
 
-#define GREEN_H_MIN		50
+#define GREEN_H_MIN		43
 #define GREEN_H_MAX		72
 #define GREEN_S_MIN		106
 #define GREEN_S_MAX		255
