@@ -8,8 +8,8 @@
 struct Shape {
     int xPos;
     int yPos;
-    std::string colour;
-    std::string shape;
+    int colour;
+    int shape;
 };
 
 
@@ -26,7 +26,7 @@ public:
     bool get_center_shape(Shape& found_shape);
 
     //
-    std::vector<Shape> get_shapes(int thres);
+    std::vector<Shape> get_shapes(int thres=0);
 
     // destructor
     ~ShapesDetector();
