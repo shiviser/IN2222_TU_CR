@@ -150,28 +150,6 @@ void ProdMaster::parse_config_file(std::string filepath) {
 };
 
 
-//void ProdMaster::broadcast_loc(const cv::Point3d& position3D, std::string ref, std::string target_name) {
-//
-//    static tf::TransformBroadcaster br;
-//    tf::Transform transform;
-//    transform.setOrigin(tf::Vector3(position3D.x/1000.0,
-//                                    position3D.y/1000.0,
-//                                    position3D.z/1000.0));
-//    tf::Quaternion q;
-//    q.setX(0.0);
-//    q.setY(0.0);
-//    q.setZ(0.0);
-//    q.setW(1.0);
-//    transform.setRotation(q);
-//
-//    // TODO: remove later
-//    std::cout << "broadcasted" << std::endl;
-//
-//    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), ref, target_name));
-//
-//};
-
-
 bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
     // clear previous data
     workbench_state.clear();
@@ -193,9 +171,11 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         // because the camera service is very slow
         sleep(1);
 
+        // scan using shape detector
         shape_detect_srvs::shape found_object;
-        bool found = shapes_detector->get_center_shape(found_object); //if {-1;-1}, there is no object
+        bool found = shapes_detector->get_center_shape(found_object);
 
+        // slot found empty
          if (!found) {
              // verbose print
              std::cout << "Slot " << i_slot_pos->slot << " is empty!" << std::endl;
@@ -229,15 +209,9 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
 
         // update state
         workbench_state.push_back(cur_comp);
-
-        // verbose print
-//        std::cout << "Found a component with color: " << cur_comp.color;
-//        std::cout << ", shape: " << cur_comp.shape;
-//        std::cout << ", on slot: " << cur_comp;
-//        std::cout << "and to be moved to: " << cur_comp << std::endl;
     }
 
-    // printing workbench
+    // verbose printing workbench
     std::cout << "The initiated workbench is: " << std::endl;
     for (auto i_workbench = workbench_state.begin(); i_workbench != workbench_state.end(); ++i_workbench) {
         std::cout << "color: " << i_workbench->color << ", shape: " << i_workbench->shape << ", slot: " << i_workbench->slot << ", move_to: " << i_workbench->move_to << std::endl;
@@ -261,7 +235,8 @@ bool ProdMaster::update_missing(const std::vector<Component>& workbench_state, s
 
     // find what's not missing
     for (auto i_workbench_slot = workbench_state.begin(); i_workbench_slot != workbench_state.end(); ++i_workbench_slot) {
-        // current workbench piece is not meant to be removed
+        // current workbench piece is not meant to be removed (this check is redundant given at this point
+        // there is nothing to be removed and all the available pieces are in their right places but oh well!)
         if (i_workbench_slot->move_to != Component::REMOVE) {
             // exclude from missing; note we use the move_to not slot assuming that the piece can still need moving
             missing[i_workbench_slot->move_to] = false;
@@ -334,18 +309,17 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     std::vector<int> to_move;
 
     for (int i_comp = 0; i_comp < workbench_state.size(); ++i_comp) {
-//        std::cout << (int)workbench_state[i_comp].color << std::end;
-//        std::cout << (int)workbench_state[i_comp].shape << std::end;
-
         // it is in the position where it has to be
         if (workbench_state[i_comp].slot == workbench_state[i_comp].move_to) {
-            std::cout << "object in its place" << std::endl;
+            std::cout << "Object in its place, will not be touched." << std::endl;
+
             continue;
         }
 
         // component to be removed
         else if (workbench_state[i_comp].move_to == Component::REMOVE) {
-            std::cout << "object to remove" << std::endl;
+            std::cout << "Object to be removed." << std::endl;
+
             to_move.push_back(i_comp);
             continue;
         }
@@ -378,8 +352,7 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
             // because we expect only one shape to be detected
             shape_detect_srvs::shape cur_item = found_objects[0];
 
-            for (auto i_missing = missing_components.begin();
-                 i_missing != missing_components.end(); /*increment in code*/) {
+            for (auto i_missing = missing_components.begin(); i_missing != missing_components.end(); ++i_missing) {
                 // scanned object matches a missing (required) object
                 if (i_missing->color == cur_item.colour && i_missing->shape == cur_item.shape) {
                     // convert to 3D location, get position of object in image to gripperbot base
@@ -411,14 +384,9 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
                     robotino->move_to_cambot();
                     robotino_scan_complete = robotino->rotate();
 
-                    // remove from missing
-                    i_missing = missing_components.erase(i_missing);
+                    // remove from missing and stop
+                    missing_components.erase(i_missing);
                     break;
-                }
-
-                    // if not match, go to next
-                else {
-                    ++i_missing;
                 }
             }
         }
@@ -426,22 +394,8 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
 };
 
 
-// TODO: maybe make it a class function
-//bool store_trans_result(prod_master_srvs::ComputedTransformation::Request  &req,
-//         prod_master_srvs::ComputedTransformation::Response &res) {
-//    // storing received data
-////    result.x = req.x;
-////    result.y = req.y;
-////    result.z = req.z;
-//
-//    // received successfully
-//    res.status = true;
-//    return true;
-//}
-
 cv::Point3f ProdMaster::get_position_wrt_gripper(int img_point_x, int img_point_y) {
-    
-float k = 0.395/560.0;
+    float k = 0.395/560.0;
 
 	float xo=0.0; float yo=0.37;
 		
@@ -451,22 +405,7 @@ float k = 0.395/560.0;
 	float z = 0.23;
 
     return cv::Point3f(x, y, z);
-}
-
-//cv::Point3d ProdMaster::get_point_wrt_gripper(const cv::Point3d& pos3D_wrt_cambot) {
-////    transformation_pub.publish("start");
-//
-//    // TODO: http://answers.ros.org/question/12045/how-to-deliver-arguments-to-a-callback-function/
-//    cv::Point3d result;
-////    transformation_server = ros_node->advertiseService("/prod_master_srvs/computed_transformation", store_trans_result);
-//
-//    while (true) {
-//        broadcast_loc(pos3D_wrt_cambot, "cambot_wrist", "TARGET_BOX_0");
-//    }
-//
-//    // TODO: remove
-//    return cv::Point3d(1.0f, 1.0f, 10.f);
-//};
+};
 
 
 bool ProdMaster::order_components(std::vector<Component>& missing_components) {
@@ -495,6 +434,9 @@ bool ProdMaster::order_components(std::vector<Component>& missing_components) {
             case 3:
                 cur_item.color = "yellow";
                 break;
+            default:
+                std::cout << "Missing component has unknown color: " << i_missing->color << ". Will be skipped." << std::endl;
+                continue;
         }
 
         switch (i_missing->shape) {
@@ -510,6 +452,9 @@ bool ProdMaster::order_components(std::vector<Component>& missing_components) {
             case 2:
                 cur_item.shape = "triangle";
                 break;
+            default:
+                std::cout << "Missing component has unknown shape: " << i_missing->shape << ". Will be skipped." << std::endl;
+                continue;
         }
 
         shopping_list.push_back(cur_item);
