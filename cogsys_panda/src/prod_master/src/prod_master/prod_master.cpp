@@ -17,6 +17,7 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
     Component third(2, 2, 2);
     blueprint.push_back(third);
 
+
     bot = new BotController(n);
     robotino = new RobotinoController(n);
     shapes_detector = new ShapesDetector(n);
@@ -168,7 +169,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
     for (auto i_slot_pos = workbench_slots_cambot.begin(); i_slot_pos != workbench_slots_cambot.end(); ++i_slot_pos) {
         bot->movecambot(i_slot_pos->coord.x, i_slot_pos->coord.y, i_slot_pos->coord.z);
 
-        // because the camera service is very slow
+        // because the camera service is very slow 2 ----- sec to be sure??
         sleep(1);
 
         // scan using shape detector
@@ -211,7 +212,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         workbench_state.push_back(cur_comp);
     }
 
-    // verbose printing workbench
+    // verbose printing workbench -------  did the output work???
     std::cout << "The initiated workbench is: " << std::endl;
     for (auto i_workbench = workbench_state.begin(); i_workbench != workbench_state.end(); ++i_workbench) {
         std::cout << "color: " << i_workbench->color << ", shape: " << i_workbench->shape << ", slot: " << i_workbench->slot << ", move_to: " << i_workbench->move_to << std::endl;
@@ -243,7 +244,7 @@ bool ProdMaster::update_missing(const std::vector<Component>& workbench_state, s
         }
     }
 
-    // create list of the actually missing components
+    // create list of the actually missing components   ----- output to check????
     for (int i_slot = 0; i_slot < TOTAL_SLOTS_USED; ++i_slot) {
         if (missing[i_slot]) {
             missing_components.push_back(blueprint[i_slot]);
@@ -255,7 +256,7 @@ bool ProdMaster::update_missing(const std::vector<Component>& workbench_state, s
 
 
 void ProdMaster::execute_move_components(std::vector<int>& to_move, std::vector<Component>& workbench_state) {
-    // TODO if time permits, try to get movements in a smooth path: 3 or 4 points trajectory
+    // TODO if time permits, try to get movements in a smooth path: 3 or 4 points trajectory --- nope, no time.
 
     for (int i_comp = 0; i_comp < to_move.size(); ++i_comp) {
         // go to start position
@@ -305,7 +306,7 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     // stores indices of the workbench_state that corresponds to components to be moved/shuffled
     // moved: consists of to be removed or moved to another position
     // for shuffling: pairs are stored as adjacent elements
-    std::vector<int> to_shuffle;
+    std::vector<int> to_shuffle;  // -------  necessary? we don't shuffle...
     std::vector<int> to_move;
 
     for (int i_comp = 0; i_comp < workbench_state.size(); ++i_comp) {
@@ -341,7 +342,7 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     // TODO: shuffle
 };
 
-
+	// ---------    at what point does the robotino get the command to fetch the next parts, if he rotated 360° and there are still 			missing components?
 void ProdMaster::receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
     bool robotino_scan_complete = false;
 
@@ -377,7 +378,7 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
                     // release the object
                     bot->opengripper();
 
-                    // update the workbench
+                    // update the workbench  --------     Naming of the x and y position of component in slot i? so far 2 times slot.  
                     Component added_comp(i_missing->shape, i_missing->color, i_missing->slot, i_missing->slot);
                     workbench_state.push_back(added_comp);
 
