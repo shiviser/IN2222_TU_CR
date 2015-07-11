@@ -25,6 +25,54 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
 };
 
 
+void ProdMaster::parse_blueprint_file(std::string filepath) {
+    std::string path = ros::package::getPath("prod_master");
+    std::stringstream ss_path;
+    ss_path << path << filepath;
+    QString filename(ss_path.str().c_str());
+    QFileInfo config(filename);
+
+    if(!config.exists()) {
+        std::cout <<"Error reading " << filepath << " file!" <<std::endl;
+        throw;
+    }
+
+    QSettings ini_file(filename, QSettings::IniFormat);    
+
+    ini_file.beginGroup("OBJ_REQ");
+
+    int N_OBJ = ini_file.value("N_OBJ", 0).toInt();
+    std::cout << "N_OBJ: " << N_OBJ << std::endl;
+
+    std::stringstream target_name;
+
+    for(unsigned int n = 0; n < N_OBJ; ++n) {
+	
+	Component current_comp(0, 0, 0);
+
+        target_name.str("");
+        target_name << "OBJ_" << n << "_" << "SHAPE";
+
+        int shape = ini_file.value(target_name.str().c_str(), 0).toInt();
+	
+        target_name.str("");
+        target_name << "OBJ_" << n << "_" << "COLOR";
+
+        int color = ini_file.value(target_name.str().c_str(), 0).toInt();
+
+
+	current_comp.shape = shape;
+ 	current_comp.color = color;
+	current_comp.slot = n;
+        blueprint.push_back(current_comp);
+
+        //std::cout << "OBJ_" << n << << cur_slot.slot << ", coord = " << cur_slot.coord << std::endl;
+    }
+
+    ini_file.endGroup();
+};
+
+
 void ProdMaster::_parse_config_slots(QSettings &ini_file, std::string bot_name, std::vector<Slot>& slots_collection) {
     std::cout << "Parsing SLOTS for " << bot_name << " ... " << std::endl;
 
