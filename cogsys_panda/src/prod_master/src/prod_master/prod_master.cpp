@@ -8,14 +8,16 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
     // config file for positions etc.
     parse_config_file("/config_data/config.ini");
 
-    // TODO: parse file for production
-    // load_production("/config_data/production.ini");
-    Component first(0, 0, 0);
-    blueprint.push_back(first);
-    Component second(1, 1, 1);
-    blueprint.push_back(second);
-    Component third(2, 2, 2);
-    blueprint.push_back(third);
+    // production file for blueprint
+    parse_config_file("/config_data/production.ini");
+
+    // dummy
+//    Component first(0, 0, 0);
+//    blueprint.push_back(first);
+//    Component second(1, 1, 1);
+//    blueprint.push_back(second);
+//    Component third(2, 2, 2);
+//    blueprint.push_back(third);
 
     bot = new BotController(n);
     robotino = new RobotinoController(n);
