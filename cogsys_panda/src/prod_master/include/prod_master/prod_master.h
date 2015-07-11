@@ -98,6 +98,9 @@ protected:
     //
     void parse_config_file(std::string filepath);
 
+    // parse required objects
+    void parse_blueprint_file(std::string filepath);
+
     //
     void execute_move_components(std::vector<int>& to_move, std::vector<Component>& workbench_state);
 
