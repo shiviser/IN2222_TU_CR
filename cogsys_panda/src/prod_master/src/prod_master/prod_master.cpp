@@ -26,6 +26,54 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
 };
 
 
+void ProdMaster::parse_blueprint_file(std::string filepath) {
+    std::string path = ros::package::getPath("prod_master");
+    std::stringstream ss_path;
+    ss_path << path << filepath;
+    QString filename(ss_path.str().c_str());
+    QFileInfo config(filename);
+
+    if(!config.exists()) {
+        std::cout <<"Error reading " << filepath << " file!" <<std::endl;
+        throw;
+    }
+
+    QSettings ini_file(filename, QSettings::IniFormat);    
+
+    ini_file.beginGroup("OBJ_REQ");
+
+    int N_OBJ = ini_file.value("N_OBJ", 0).toInt();
+    std::cout << "N_OBJ: " << N_OBJ << std::endl;
+
+    std::stringstream target_name;
+
+    for(unsigned int n = 0; n < N_OBJ; ++n) {
+	
+	Component current_comp(0, 0, 0);
+
+        target_name.str("");
+        target_name << "OBJ_" << n << "_" << "SHAPE";
+
+        int shape = ini_file.value(target_name.str().c_str(), 0).toInt();
+	
+        target_name.str("");
+        target_name << "OBJ_" << n << "_" << "COLOR";
+
+        int color = ini_file.value(target_name.str().c_str(), 0).toInt();
+
+
+	current_comp.shape = shape;
+ 	current_comp.color = color;
+	current_comp.slot = n;
+        blueprint.push_back(current_comp);
+
+        //std::cout << "OBJ_" << n << << cur_slot.slot << ", coord = " << cur_slot.coord << std::endl;
+    }
+
+    ini_file.endGroup();
+};
+
+
 void ProdMaster::_parse_config_slots(QSettings &ini_file, std::string bot_name, std::vector<Slot>& slots_collection) {
     std::cout << "Parsing SLOTS for " << bot_name << " ... " << std::endl;
 
@@ -212,7 +260,7 @@ bool ProdMaster::initiate_production_state(std::vector<Component>& workbench_sta
         workbench_state.push_back(cur_comp);
     }
 
-    // verbose printing workbench -------  did the output work???
+    // verbose printing workbench
     std::cout << "The initiated workbench is: " << std::endl;
     for (auto i_workbench = workbench_state.begin(); i_workbench != workbench_state.end(); ++i_workbench) {
         std::cout << "color: " << i_workbench->color << ", shape: " << i_workbench->shape << ", slot: " << i_workbench->slot << ", move_to: " << i_workbench->move_to << std::endl;
@@ -342,7 +390,8 @@ void ProdMaster::rearrange_workbench(std::vector<Component>& workbench_state) {
     // TODO: shuffle
 };
 
-	// ---------    at what point does the robotino get the command to fetch the next parts, if he rotated 360° and there are still 			missing components?
+	//
+
 void ProdMaster::receive_components(std::vector<Component>& workbench_state, std::vector<Component>& missing_components) {
     bool robotino_scan_complete = false;
 
@@ -378,7 +427,7 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
                     // release the object
                     bot->opengripper();
 
-                    // update the workbench  --------     Naming of the x and y position of component in slot i? so far 2 times slot.  
+                    // update the workbench 
                     Component added_comp(i_missing->shape, i_missing->color, i_missing->slot, i_missing->slot);
                     workbench_state.push_back(added_comp);
 
