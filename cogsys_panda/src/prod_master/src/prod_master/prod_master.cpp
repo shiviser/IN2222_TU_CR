@@ -9,7 +9,7 @@ ProdMaster::ProdMaster(ros::NodeHandle *n) {
     parse_config_file("/config_data/config.ini");
 
     // production file for blueprint
-    parse_config_file("/config_data/production.ini");
+    parse_blueprint_file("/config_data/production.ini");
 
     // dummy
 //    Component first(0, 0, 0);
@@ -34,12 +34,12 @@ void ProdMaster::parse_blueprint_file(std::string filepath) {
     QString filename(ss_path.str().c_str());
     QFileInfo config(filename);
 
-    if(!config.exists()) {
-        std::cout <<"Error reading " << filepath << " file!" <<std::endl;
+    if (!config.exists()) {
+        std::cout << "Error reading " << filepath << " file!" << std::endl;
         throw;
     }
 
-    QSettings ini_file(filename, QSettings::IniFormat);    
+    QSettings ini_file(filename, QSettings::IniFormat);
 
     ini_file.beginGroup("OBJ_REQ");
 
@@ -48,27 +48,27 @@ void ProdMaster::parse_blueprint_file(std::string filepath) {
 
     std::stringstream target_name;
 
-    for(unsigned int n = 0; n < N_OBJ; ++n) {
-	
-	Component current_comp(0, 0, 0);
+    for (unsigned int n = 0; n < N_OBJ; ++n) {
+
+        Component current_comp(0, 0, 0);
 
         target_name.str("");
         target_name << "OBJ_" << n << "_" << "SHAPE";
 
         int shape = ini_file.value(target_name.str().c_str(), 0).toInt();
-	
+
         target_name.str("");
         target_name << "OBJ_" << n << "_" << "COLOR";
 
         int color = ini_file.value(target_name.str().c_str(), 0).toInt();
 
 
-	current_comp.shape = shape;
- 	current_comp.color = color;
-	current_comp.slot = n;
+        current_comp.shape = shape;
+        current_comp.color = color;
+        current_comp.slot = n;
         blueprint.push_back(current_comp);
 
-        //std::cout << "OBJ_" << n << << cur_slot.slot << ", coord = " << cur_slot.coord << std::endl;
+        std::cout << "OBJ_" << n << ": Shape: " << shape << ", Color: " << color << std::endl;
     }
 
     ini_file.endGroup();
