@@ -417,7 +417,7 @@ void ProdMaster::receive_components(std::vector<Component>& workbench_state, std
 
     bool robotino_scan_complete = false;
 
-    while(!robotino_scan_complete) {
+    while(!robotino_scan_complete && missing_components.size() > 0) {
         std::vector<shape_detect_srvs::shape> found_objects = shapes_detector->get_shapes();
 
         if (!found_objects.empty()) {
