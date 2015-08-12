@@ -18,6 +18,44 @@ Add this to your .bashrc,
 source ~/IN2222_TU_CR/cogsys_panda/devel/setup.bash
 
 
-cogsys_robotino???
-------------------
+cogsys_robotino
+---------------
 To be used by the Robotino team.
+
+
+Configuration
+=============
+Make sure the following lines are added to the .bashrc (or .zshrc depending on the shell used) -
+# ROS master
+export ROS_MASTER_URI=http://[MASTER_IP_ADDRESS]:11311/
+
+# ROS IP
+export ROS_IP=`hostname -I`
+
+On the master, make sure the following lines are added to the .bashrc (or .zshrc depending on the shell used) -
+# I am the master
+export ROS_MASTER_URI=http://[MASTER_IP_ADDRESS]:11311/
+
+
+How to run
+==========
+Make sure roscore is running.
+
+cogsys_panda
+------------
+Make sure to run the control nodes for the bots running -
+$ rosrun robot_control camrobot.launch
+$ rosrun robot_control gripperrobot.launch
+$ rosrun gripper_control gripper.launch
+$ rosrun camera camera
+
+Now run -
+$ rosrun prod_master prod_master_node
+$ rosrun shape_detect shape_detector
+
+The last two commands start all the additional nodes related to the workspace.
+
+robotino
+--------
+
+
