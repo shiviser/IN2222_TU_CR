@@ -43,7 +43,7 @@ Make sure roscore is running.
 
 cogsys_panda
 ------------
-Make sure to run the control nodes for the bots running -
+Make sure to run the control nodes for the bots -
 $ rosrun robot_control camrobot.launch
 $ rosrun robot_control gripperrobot.launch
 $ rosrun gripper_control gripper.launch
